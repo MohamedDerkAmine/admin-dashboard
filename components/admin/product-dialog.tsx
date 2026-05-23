@@ -108,36 +108,45 @@ export function ProductDialog({
               />
             </Field>
             <Field label="Category">
-              <select
-                className="h-8 rounded-md border border-input bg-transparent px-2 text-sm"
+              <Select
                 value={productForm.category}
-                onChange={(event) =>
-                  setProductForm({
-                    ...productForm,
-                    category: event.target.value,
-                  })
+                onValueChange={(value) =>
+                  setProductForm({ ...productForm, category: value as string })
                 }
               >
-                {categories.map((category) => (
-                  <option key={category.id}>{category.name}</option>
-                ))}
-              </select>
+                <SelectTrigger className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {categories.map((category) => (
+                    <SelectItem key={category.id} value={category.name}>
+                      {category.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </Field>
             <Field label="Status">
-              <select
-                className="h-8 rounded-md border border-input bg-transparent px-2 text-sm"
+              <Select
                 value={productForm.status}
-                onChange={(event) =>
+                onValueChange={(value) =>
                   setProductForm({
                     ...productForm,
-                    status: event.target.value as Product["status"],
+                    status: value as Product["status"],
                   })
                 }
               >
-                <option>Active</option>
-                <option>Draft</option>
-                <option>Archived</option>
-              </select>
+                <SelectTrigger className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {productStatuses.map((status) => (
+                    <SelectItem key={status} value={status}>
+                      {status}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </Field>
             <Field label="Price">
               <Input

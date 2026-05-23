@@ -153,6 +153,18 @@
     background-color: var(--popover);
     color: var(--popover-foreground);
   }
+  /* Hide native number-input spinners — they render in the OS palette and
+     don't match the dark theme. Prefer keyboard input / +/- buttons. */
+  input[type="number"] {
+    -moz-appearance: textfield;
+    appearance: textfield;
+  }
+  input[type="number"]::-webkit-outer-spin-button,
+  input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    appearance: none;
+    margin: 0;
+  }
   ::selection {
     background: oklch(0.78 0.13 200 / 30%);
   }
