@@ -8,6 +8,7 @@ import {
   SortableHead,
   useSortable,
 } from "@/components/admin/data-table";
+import { EmptyState } from "@/components/admin/empty-state";
 import { RowActions } from "@/components/admin/row-actions";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -56,7 +57,18 @@ export function CategoriesSection({
       </div>
       <DataTable
         isEmpty={sorted.length === 0}
-        empty="No categories yet. Click Add category to create one."
+        empty={
+          <EmptyState
+            icon={TagsIcon}
+            title="No categories yet"
+            description="Categories group products in the catalog."
+            action={{
+              label: "Add category",
+              onClick: openNewCategory,
+              icon: PlusIcon,
+            }}
+          />
+        }
       >
         <TableHeader>
           <TableRow>

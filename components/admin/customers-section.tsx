@@ -1,11 +1,14 @@
 "use client";
 
+import { FilterXIcon, UsersIcon } from "lucide-react";
+
 import type { Customer } from "@/lib/admin-data";
 import {
   DataTable,
   SortableHead,
   useSortable,
 } from "@/components/admin/data-table";
+import { EmptyState } from "@/components/admin/empty-state";
 import { Pagination } from "@/components/admin/pagination";
 import { StatusDot } from "@/components/admin/status-dot";
 import { Toolbar } from "@/components/admin/toolbar";
@@ -62,7 +65,31 @@ export function CustomersSection({
         setQuery={setQuery}
         placeholder="Search name, email, segment..."
       />
-      <DataTable isEmpty={sorted.length === 0} empty="No customers match.">
+      <DataTable
+        isEmpty={sorted.length === 0}
+        empty={
+          query !== "" ? (
+            <EmptyState
+              icon={FilterXIcon}
+              title="No customers match your search"
+              description="Try a different name, email, or segment."
+              action={{
+                label: "Clear search",
+                onClick: () => {
+                  setQuery("");
+                  setPage(1);
+                },
+              }}
+            />
+          ) : (
+            <EmptyState
+              icon={UsersIcon}
+              title="No customers yet"
+              description="Customers will appear here once they sign up or place an order."
+            />
+          )
+        }
+      >
         <TableHeader>
           <TableRow>
             <SortableHead field="name" sort={sort} onToggle={toggle}>

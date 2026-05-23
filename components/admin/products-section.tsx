@@ -1,20 +1,34 @@
 "use client";
 
-import { PackageIcon, PlusIcon } from "lucide-react";
+import Link from "next/link";
+import { FilterXIcon, PackageIcon, PlusIcon } from "lucide-react";
 
 import type { Category, Product } from "@/lib/admin-data";
+import {
+  BulkActionBar,
+  SelectionCheckbox,
+} from "@/components/admin/bulk-action-bar";
 import {
   DataTable,
   SortableHead,
   useSortable,
 } from "@/components/admin/data-table";
+import { EmptyState } from "@/components/admin/empty-state";
 import { Pagination } from "@/components/admin/pagination";
 import { RowActions } from "@/components/admin/row-actions";
+import { SavedViews, useSavedViews } from "@/components/admin/saved-views";
 import { StatusDot } from "@/components/admin/status-dot";
 import { FilterSelect, Toolbar } from "@/components/admin/toolbar";
+import { useSelection } from "@/components/admin/use-selection";
 import { formatCurrency } from "@/components/admin/utils";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+} from "@/components/ui/select";
 import {
   TableBody,
   TableCell,
@@ -24,9 +38,13 @@ import {
 } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
 
+const productStatuses: Product["status"][] = ["Active", "Draft", "Archived"];
+
 type SortField = "name" | "category" | "status" | "price" | "stock";
 
 export function ProductsSection({
+  bulkDeleteProducts,
+  bulkUpdateProductStatus,
   categories,
   categoryFilter,
   deleteProduct,
@@ -43,6 +61,8 @@ export function ProductsSection({
   totalCount,
   totalPages,
 }: {
+  bulkDeleteProducts: (ids: string[]) => void;
+  bulkUpdateProductStatus: (ids: string[], status: Product["status"]) => void;
   categories: Category[];
   categoryFilter: string;
   deleteProduct: (productId: string) => void;
@@ -60,6 +80,7 @@ export function ProductsSection({
   totalPages: number;
 }) {
   const { sort, toggle, apply } = useSortable<SortField>();
+  const savedViews = useSavedViews("products");
   const sorted = apply(products, {
     name: (p) => p.name.toLowerCase(),
     category: (p) => p.category.toLowerCase(),
@@ -67,6 +88,17 @@ export function ProductsSection({
     price: (p) => p.price,
     stock: (p) => p.stock,
   });
+  const selection = useSelection(sorted);
+
+  function handleBulkDelete() {
+    bulkDeleteProducts(selection.ids);
+    selection.clear();
+  }
+
+  function handleBulkStatus(status: Product["status"]) {
+    bulkUpdateProductStatus(selection.ids, status);
+    selection.clear();
+  }
 
   return (
     <Card className="gap-0 py-0">
@@ -83,6 +115,20 @@ export function ProductsSection({
           Add product
         </Button>
       </div>
+      <SavedViews
+        views={savedViews.views}
+        currentFilters={{ query, statusFilter, categoryFilter }}
+        onApply={(filters) => {
+          setQuery(filters.query);
+          setStatusFilter(filters.statusFilter);
+          setCategoryFilter(filters.categoryFilter ?? "All");
+          setPage(1);
+        }}
+        onSave={(name) =>
+          savedViews.add(name, { query, statusFilter, categoryFilter })
+        }
+        onDelete={savedViews.remove}
+      />
       <Toolbar
         query={query}
         setQuery={setQuery}
@@ -107,9 +153,71 @@ export function ProductsSection({
           options={["All", "Active", "Draft", "Archived"]}
         />
       </Toolbar>
-      <DataTable isEmpty={sorted.length === 0} empty="No products match.">
+      <BulkActionBar count={selection.size} onClear={selection.clear}>
+        <Select onValueChange={(value) => handleBulkStatus(value as Product["status"])}>
+          <SelectTrigger className="h-6 px-2 text-xs">
+            <span>Set status</span>
+          </SelectTrigger>
+          <SelectContent>
+            {productStatuses.map((status) => (
+              <SelectItem key={status} value={status}>
+                {status}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Button
+          variant="destructive"
+          size="xs"
+          onClick={handleBulkDelete}
+        >
+          Delete
+        </Button>
+      </BulkActionBar>
+      <DataTable
+        isEmpty={sorted.length === 0}
+        empty={
+          query !== "" ||
+          statusFilter !== "All" ||
+          (categoryFilter ?? "All") !== "All" ? (
+            <EmptyState
+              icon={FilterXIcon}
+              title="No products match your filters"
+              description="Try a different search or clear the filters."
+              action={{
+                label: "Clear filters",
+                onClick: () => {
+                  setQuery("");
+                  setStatusFilter("All");
+                  setCategoryFilter("All");
+                  setPage(1);
+                },
+              }}
+            />
+          ) : (
+            <EmptyState
+              icon={PackageIcon}
+              title="No products yet"
+              description="Start your catalog by adding your first product."
+              action={{
+                label: "Add product",
+                onClick: openNewProduct,
+                icon: PlusIcon,
+              }}
+            />
+          )
+        }
+      >
         <TableHeader>
           <TableRow>
+            <TableHead className="w-9">
+              <SelectionCheckbox
+                checked={selection.allSelected}
+                indeterminate={selection.someSelected}
+                onChange={selection.toggleAll}
+                label="Select all visible products"
+              />
+            </TableHead>
             <SortableHead field="name" sort={sort} onToggle={toggle}>
               Product
             </SortableHead>
@@ -130,7 +238,17 @@ export function ProductsSection({
         </TableHeader>
         <TableBody>
           {sorted.map((product) => (
-            <TableRow key={product.id}>
+            <TableRow
+              key={product.id}
+              data-state={selection.selected.has(product.id) ? "selected" : undefined}
+            >
+              <TableCell>
+                <SelectionCheckbox
+                  checked={selection.selected.has(product.id)}
+                  onChange={() => selection.toggle(product.id)}
+                  label={`Select ${product.name}`}
+                />
+              </TableCell>
               <TableCell>
                 <div className="flex items-center gap-2.5">
                   <div className="flex size-8 shrink-0 items-center justify-center overflow-hidden rounded-md border border-border/60 bg-muted text-xs">
@@ -146,9 +264,12 @@ export function ProductsSection({
                     )}
                   </div>
                   <div className="min-w-0">
-                    <p className="truncate text-sm font-medium">
+                    <Link
+                      href={`/products/${product.id}`}
+                      className="block truncate text-sm font-medium hover:text-primary hover:underline"
+                    >
                       {product.name}
-                    </p>
+                    </Link>
                     <p className="truncate font-mono text-[11px] text-muted-foreground">
                       {product.sku}
                     </p>

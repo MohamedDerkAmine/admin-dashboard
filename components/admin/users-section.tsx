@@ -1,10 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { MailPlusIcon, ShieldCheckIcon } from "lucide-react";
+import { MailPlusIcon } from "lucide-react";
 
 import {
-  rolePermissions,
   type AdminRole,
   type AdminUser,
   type AdminUserStatus,
@@ -12,6 +11,7 @@ import {
 } from "@/lib/admin-data";
 import { adminRoles } from "@/components/admin/constants";
 import { DataTable } from "@/components/admin/data-table";
+import { RolesPanel } from "@/components/admin/roles-panel";
 import { RowActions } from "@/components/admin/row-actions";
 import { StatusDot } from "@/components/admin/status-dot";
 import type { InvitationForm } from "@/components/admin/types";
@@ -159,88 +159,51 @@ export function UsersSection({
         </DataTable>
       </Card>
 
-      <div className="grid gap-3 xl:grid-cols-2">
-        <Card className="gap-0 py-0">
-          <div className="border-b border-border/50 px-4 py-3">
-            <h3 className="text-sm font-semibold">Pending invitations</h3>
-            <p className="text-xs text-muted-foreground">
-              {invitations.length} open · revoke stale access
-            </p>
+      <Card className="gap-0 py-0">
+        <div className="border-b border-border/50 px-4 py-3">
+          <h3 className="text-sm font-semibold">Pending invitations</h3>
+          <p className="text-xs text-muted-foreground">
+            {invitations.length} open · revoke stale access
+          </p>
+        </div>
+        {invitations.length === 0 ? (
+          <div className="px-4 py-8 text-center text-sm text-muted-foreground">
+            No pending invites.
           </div>
-          {invitations.length === 0 ? (
-            <div className="px-4 py-8 text-center text-sm text-muted-foreground">
-              No pending invites.
-            </div>
-          ) : (
-            <div className="divide-y divide-border/40">
-              {invitations.map((invitation) => (
-                <div
-                  key={invitation.id}
-                  className="flex items-center gap-3 px-4 py-2.5"
-                >
-                  <div className="grid size-7 place-items-center rounded-full bg-muted text-muted-foreground">
-                    <MailPlusIcon className="size-3.5" />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium">
-                      {invitation.email}
-                    </p>
-                    <p className="text-[11px] text-muted-foreground">
-                      {invitation.role} · expires {invitation.expires}
-                    </p>
-                  </div>
-                  <RowActions
-                    actions={[
-                      {
-                        label: "Revoke",
-                        onSelect: () => removeInvitation(invitation.id),
-                        tone: "danger",
-                      },
-                    ]}
-                  />
-                </div>
-              ))}
-            </div>
-          )}
-        </Card>
-
-        <Card className="gap-0 py-0">
-          <div className="flex items-center gap-2 border-b border-border/50 px-4 py-3">
-            <ShieldCheckIcon className="size-4 text-muted-foreground" />
-            <div>
-              <h3 className="text-sm font-semibold">Role permissions</h3>
-              <p className="text-xs text-muted-foreground">
-                Local policy model for UI restrictions
-              </p>
-            </div>
-          </div>
+        ) : (
           <div className="divide-y divide-border/40">
-            {adminRoles.map((role) => (
-              <div key={role} className="grid grid-cols-[88px_1fr] gap-3 px-4 py-2.5">
-                <div>
-                  <span
-                    className={
-                      role === "Owner"
-                        ? "inline-flex h-5 items-center rounded-md bg-primary/15 px-1.5 text-[11px] font-medium text-primary"
-                        : "inline-flex h-5 items-center rounded-md bg-muted px-1.5 text-[11px] font-medium text-muted-foreground"
-                    }
-                  >
-                    {role}
-                  </span>
+            {invitations.map((invitation) => (
+              <div
+                key={invitation.id}
+                className="flex items-center gap-3 px-4 py-2.5"
+              >
+                <div className="grid size-7 place-items-center rounded-full bg-muted text-muted-foreground">
+                  <MailPlusIcon className="size-3.5" />
                 </div>
-                <ul className="grid gap-0.5 text-xs text-muted-foreground">
-                  {rolePermissions[role].slice(0, 3).map((permission) => (
-                    <li key={permission} className="flex gap-1.5">
-                      <span className="text-muted-foreground/40">›</span>
-                      <span>{permission}</span>
-                    </li>
-                  ))}
-                </ul>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-medium">
+                    {invitation.email}
+                  </p>
+                  <p className="text-[11px] text-muted-foreground">
+                    {invitation.role} · expires {invitation.expires}
+                  </p>
+                </div>
+                <RowActions
+                  actions={[
+                    {
+                      label: "Revoke",
+                      onSelect: () => removeInvitation(invitation.id),
+                      tone: "danger",
+                    },
+                  ]}
+                />
               </div>
             ))}
           </div>
-        </Card>
-      </div>
+        )}
+      </Card>
+
+      <RolesPanel canManage={canManageUsers} />
 
       <Dialog open={inviteOpen} onOpenChange={setInviteOpen}>
         <DialogContent>

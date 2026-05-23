@@ -21,6 +21,7 @@ export function toneFor(status: StatusLike | string): Tone {
     case "Processing":
     case "Shipped":
     case "Returning":
+    case "Scheduled":
       return "info";
     case "Pending":
     case "Draft":
@@ -30,6 +31,7 @@ export function toneFor(status: StatusLike | string): Tone {
     case "Refunded":
     case "Archived":
     case "Suspended":
+    case "Expired":
       return "danger";
     default:
       return "neutral";

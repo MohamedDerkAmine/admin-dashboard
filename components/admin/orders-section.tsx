@@ -1,23 +1,38 @@
 "use client";
 
-import { PlusIcon } from "lucide-react";
+import { FilterXIcon, PlusIcon, ShoppingCartIcon } from "lucide-react";
 
 import type { Order, OrderStatus } from "@/lib/admin-data";
+import {
+  BulkActionBar,
+  SelectionCheckbox,
+} from "@/components/admin/bulk-action-bar";
 import { orderStatuses } from "@/components/admin/constants";
 import {
   DataTable,
   SortableHead,
   useSortable,
 } from "@/components/admin/data-table";
+import { EmptyState } from "@/components/admin/empty-state";
 import { Pagination } from "@/components/admin/pagination";
+import { RowActions } from "@/components/admin/row-actions";
+import { SavedViews, useSavedViews } from "@/components/admin/saved-views";
 import { StatusDot, toneFor } from "@/components/admin/status-dot";
 import { FilterSelect, Toolbar } from "@/components/admin/toolbar";
+import { useSelection } from "@/components/admin/use-selection";
 import { formatCurrency } from "@/components/admin/utils";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+} from "@/components/ui/select";
+import {
   TableBody,
   TableCell,
+  TableHead,
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
@@ -34,7 +49,9 @@ const toneClass: Record<ReturnType<typeof toneFor>, string> = {
 };
 
 export function OrdersSection({
+  bulkUpdateOrderStatus,
   openNewOrder,
+  openRefund,
   orders,
   page,
   query,
@@ -46,7 +63,9 @@ export function OrdersSection({
   totalPages,
   updateOrderStatus,
 }: {
+  bulkUpdateOrderStatus: (ids: string[], status: OrderStatus) => void;
   openNewOrder: () => void;
+  openRefund: (orderId: string) => void;
   orders: Order[];
   page: number;
   query: string;
@@ -59,6 +78,7 @@ export function OrdersSection({
   updateOrderStatus: (orderId: string, status: OrderStatus) => void;
 }) {
   const { sort, toggle, apply } = useSortable<SortField>();
+  const savedViews = useSavedViews("orders");
   const sorted = apply(orders, {
     id: (o) => o.id,
     customer: (o) => o.customer.toLowerCase(),
@@ -66,6 +86,12 @@ export function OrdersSection({
     status: (o) => o.status,
     date: (o) => o.date,
   });
+  const selection = useSelection(sorted);
+
+  function handleBulkStatus(status: OrderStatus) {
+    bulkUpdateOrderStatus(selection.ids, status);
+    selection.clear();
+  }
 
   return (
     <Card className="gap-0 py-0">
@@ -82,6 +108,17 @@ export function OrdersSection({
           Add order
         </Button>
       </div>
+      <SavedViews
+        views={savedViews.views}
+        currentFilters={{ query, statusFilter }}
+        onApply={(filters) => {
+          setQuery(filters.query);
+          setStatusFilter(filters.statusFilter);
+          setPage(1);
+        }}
+        onSave={(name) => savedViews.add(name, { query, statusFilter })}
+        onDelete={savedViews.remove}
+      />
       <Toolbar
         query={query}
         setQuery={setQuery}
@@ -97,9 +134,61 @@ export function OrdersSection({
           options={["All", ...orderStatuses]}
         />
       </Toolbar>
-      <DataTable isEmpty={sorted.length === 0} empty="No orders match.">
+      <BulkActionBar count={selection.size} onClear={selection.clear}>
+        <Select onValueChange={(value) => handleBulkStatus(value as OrderStatus)}>
+          <SelectTrigger className="h-6 px-2 text-xs">
+            <span>Set status</span>
+          </SelectTrigger>
+          <SelectContent>
+            {orderStatuses.map((status) => (
+              <SelectItem key={status} value={status}>
+                {status}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </BulkActionBar>
+      <DataTable
+        isEmpty={sorted.length === 0}
+        empty={
+          query !== "" || statusFilter !== "All" ? (
+            <EmptyState
+              icon={FilterXIcon}
+              title="No orders match your filters"
+              description="Try a different search or clear the filters."
+              action={{
+                label: "Clear filters",
+                onClick: () => {
+                  setQuery("");
+                  setStatusFilter("All");
+                  setPage(1);
+                },
+              }}
+            />
+          ) : (
+            <EmptyState
+              icon={ShoppingCartIcon}
+              title="No orders yet"
+              description="Orders will appear here as customers place them."
+              action={{
+                label: "Create order",
+                onClick: openNewOrder,
+                icon: PlusIcon,
+              }}
+            />
+          )
+        }
+      >
         <TableHeader>
           <TableRow>
+            <TableHead className="w-9">
+              <SelectionCheckbox
+                checked={selection.allSelected}
+                indeterminate={selection.someSelected}
+                onChange={selection.toggleAll}
+                label="Select all visible orders"
+              />
+            </TableHead>
             <SortableHead field="id" sort={sort} onToggle={toggle}>
               Order
             </SortableHead>
@@ -115,6 +204,7 @@ export function OrdersSection({
             <SortableHead field="date" sort={sort} onToggle={toggle} align="right">
               Date
             </SortableHead>
+            <TableHead className="w-10" />
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -122,7 +212,17 @@ export function OrdersSection({
             const tone = toneFor(order.status);
 
             return (
-              <TableRow key={order.id}>
+              <TableRow
+                key={order.id}
+                data-state={selection.selected.has(order.id) ? "selected" : undefined}
+              >
+                <TableCell>
+                  <SelectionCheckbox
+                    checked={selection.selected.has(order.id)}
+                    onChange={() => selection.toggle(order.id)}
+                    label={`Select order ${order.id}`}
+                  />
+                </TableCell>
                 <TableCell>
                   <p className="font-mono text-sm font-medium">{order.id}</p>
                   <p className="text-[11px] text-muted-foreground">
@@ -164,6 +264,20 @@ export function OrdersSection({
                 </TableCell>
                 <TableCell className="text-right font-mono text-xs text-muted-foreground tabular-nums">
                   {order.date}
+                </TableCell>
+                <TableCell>
+                  <RowActions
+                    actions={[
+                      {
+                        label:
+                          order.status === "Refunded"
+                            ? "Already refunded"
+                            : "Refund order",
+                        onSelect: () => openRefund(order.id),
+                        tone: order.status === "Refunded" ? "default" : "danger",
+                      },
+                    ]}
+                  />
                 </TableCell>
               </TableRow>
             );

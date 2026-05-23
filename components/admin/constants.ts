@@ -1,6 +1,8 @@
 import {
   LayoutDashboardIcon,
   PackageIcon,
+  PercentIcon,
+  ScrollTextIcon,
   ShieldIcon,
   ShoppingCartIcon,
   TagsIcon,
@@ -43,9 +45,11 @@ export const navItems: Array<{
   { id: "dashboard", label: "Dashboard", icon: LayoutDashboardIcon },
   { id: "products", label: "Products", icon: PackageIcon },
   { id: "categories", label: "Categories", icon: TagsIcon },
+  { id: "discounts", label: "Discounts", icon: PercentIcon },
   { id: "orders", label: "Orders", icon: ShoppingCartIcon },
   { id: "customers", label: "Customers", icon: UsersIcon },
   { id: "users", label: "Users & Roles", icon: ShieldIcon },
+  { id: "audit", label: "Audit log", icon: ScrollTextIcon },
 ];
 
 export const emptyProductForm: ProductForm = {

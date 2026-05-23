@@ -10,9 +10,11 @@ export type Section =
   | "dashboard"
   | "products"
   | "categories"
+  | "discounts"
   | "orders"
   | "customers"
-  | "users";
+  | "users"
+  | "audit";
 
 export type ProductForm = Omit<Product, "id">;
 

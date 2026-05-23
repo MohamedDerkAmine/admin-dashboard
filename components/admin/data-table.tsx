@@ -16,14 +16,18 @@ export function DataTable({
   isEmpty?: boolean;
 }) {
   return (
-    <div className="overflow-x-auto">
-      <Table className="[&_tbody_tr]:h-10 [&_tbody_tr]:border-border/40 [&_tbody_tr:hover]:bg-muted/30 [&_th]:h-9 [&_th]:bg-muted/20 [&_th]:px-3 [&_th]:text-[11px] [&_th]:font-medium [&_th]:uppercase [&_th]:tracking-wider [&_th]:text-muted-foreground [&_td]:px-3">
+    <div className="overflow-x-auto animate-in fade-in slide-in-from-top-1 duration-200 motion-reduce:animate-none">
+      <Table className="[&_tbody_tr]:h-[var(--table-row-h)] [&_tbody_tr]:border-border/40 [&_tbody_tr:hover]:bg-muted/30 [&_th]:h-[var(--table-head-h)] [&_th]:bg-muted/20 [&_th]:px-[var(--table-cell-px)] [&_th]:text-[11px] [&_th]:font-medium [&_th]:uppercase [&_th]:tracking-wider [&_th]:text-muted-foreground [&_td]:px-[var(--table-cell-px)]">
         {children}
       </Table>
       {isEmpty ? (
-        <div className="border-t border-border/40 px-3 py-10 text-center text-sm text-muted-foreground">
-          {empty ?? "No results."}
-        </div>
+        typeof empty === "string" || empty == null ? (
+          <div className="border-t border-border/40 px-3 py-10 text-center text-sm text-muted-foreground">
+            {empty ?? "No results."}
+          </div>
+        ) : (
+          empty
+        )
       ) : null}
     </div>
   );

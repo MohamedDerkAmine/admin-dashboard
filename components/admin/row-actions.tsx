@@ -57,7 +57,7 @@ export function RowActions({
         <span className="sr-only">Open row actions</span>
       </Button>
       {open ? (
-        <div className="absolute right-0 top-8 z-30 grid min-w-36 rounded-md border border-border/70 bg-popover p-1 text-sm text-popover-foreground shadow-lg ring-1 ring-foreground/5">
+        <div className="absolute right-0 top-8 z-30 grid min-w-36 rounded-md border border-border bg-popover p-1 text-sm text-popover-foreground shadow-xl ring-1 ring-foreground/10">
           {actions.map((action) => (
             <button
               key={action.label}

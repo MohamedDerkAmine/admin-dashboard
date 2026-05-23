@@ -11,6 +11,8 @@ export const metadata: Metadata = {
   description: "Dense commerce operations workspace.",
 };
 
+const prePaintScript = `(function(){try{var s=localStorage.getItem('theme');var d=s==='dark'||((!s||s==='system')&&matchMedia('(prefers-color-scheme: dark)').matches);document.documentElement.classList.toggle('dark',d);var den=localStorage.getItem('density');if(den==='compact'||den==='dense'){document.documentElement.setAttribute('data-density',den);}}catch(e){}})();`;
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -19,13 +21,12 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={cn(
-        "dark h-full antialiased",
-        "font-sans",
-        geist.variable,
-        mono.variable,
-      )}
+      suppressHydrationWarning
+      className={cn("h-full antialiased", "font-sans", geist.variable, mono.variable)}
     >
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: prePaintScript }} />
+      </head>
       <body className="min-h-full flex flex-col bg-background text-foreground">
         {children}
       </body>

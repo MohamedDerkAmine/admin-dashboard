@@ -14,7 +14,7 @@ const sections: { label: string; items: typeof navItems }[] = [
   {
     label: "Catalog",
     items: navItems.filter((item) =>
-      ["products", "categories"].includes(item.id),
+      ["products", "categories", "discounts"].includes(item.id),
     ),
   },
   {
@@ -25,7 +25,9 @@ const sections: { label: string; items: typeof navItems }[] = [
   },
   {
     label: "Admin",
-    items: navItems.filter((item) => item.id === "users"),
+    items: navItems.filter((item) =>
+      ["users", "audit"].includes(item.id),
+    ),
   },
 ];
 

@@ -5,19 +5,31 @@ import { ChevronRightIcon, LogOutIcon, SearchIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 import {
+  initialAuditEvents,
   initialCategories,
   initialAdminUsers,
   initialCustomers,
+  initialDiscountCodes,
   initialInvitations,
   initialOrders,
   initialProducts,
   type AdminRole,
   type AdminUserStatus,
+  type AuditAction,
+  type AuditEvent,
+  type AuditResource,
+  type DiscountCode,
   type OrderStatus,
   type Product,
 } from "@/lib/admin-data";
 import { createClient } from "@/lib/client";
+import { AuditLogSection } from "@/components/admin/audit-log-section";
 import { CategoriesSection } from "@/components/admin/categories-section";
+import {
+  DiscountDialog,
+  type DiscountFormState,
+} from "@/components/admin/discount-dialog";
+import { DiscountsSection } from "@/components/admin/discounts-section";
 import { CategoryDialog } from "@/components/admin/category-dialog";
 import { CommandPalette } from "@/components/admin/command-palette";
 import { CustomersSection } from "@/components/admin/customers-section";
@@ -31,12 +43,18 @@ import {
 } from "@/components/admin/constants";
 import { OrderDialog } from "@/components/admin/order-dialog";
 import { Kbd } from "@/components/admin/kbd";
+import { RefundDialog } from "@/components/admin/refund-dialog";
+import { useRecents, type RecentItem } from "@/components/admin/recents";
 import { filterByQuery, paginate } from "@/components/admin/utils";
 import { MobileNav } from "@/components/admin/mobile-nav";
 import { OrdersSection } from "@/components/admin/orders-section";
 import { ProductDialog } from "@/components/admin/product-dialog";
 import { ProductsSection } from "@/components/admin/products-section";
+import { DensityToggle } from "@/components/admin/density-toggle";
+import { ShortcutsDialog } from "@/components/admin/shortcuts-dialog";
 import { Sidebar } from "@/components/admin/sidebar";
+import { ThemeToggle } from "@/components/admin/theme-toggle";
+import { ToastProvider, useToast } from "@/components/admin/toast";
 import { UsersSection } from "@/components/admin/users-section";
 import type {
   CategoryForm,
@@ -48,8 +66,18 @@ import type {
 import { Button } from "@/components/ui/button";
 
 export function AdminDashboard({ userEmail }: { userEmail?: string }) {
+  return (
+    <ToastProvider>
+      <AdminDashboardInner userEmail={userEmail} />
+    </ToastProvider>
+  );
+}
+
+function AdminDashboardInner({ userEmail }: { userEmail?: string }) {
   const router = useRouter();
   const supabase = createClient();
+  const { toast } = useToast();
+  const recents = useRecents();
   const [section, setSection] = useState<Section>("dashboard");
   const [products, setProducts] = useState(initialProducts);
   const [categories, setCategories] = useState(initialCategories);
@@ -73,7 +101,14 @@ export function AdminDashboard({ userEmail }: { userEmail?: string }) {
     useState<CategoryForm>(emptyCategoryForm);
   const [orderDialogOpen, setOrderDialogOpen] = useState(false);
   const [orderForm, setOrderForm] = useState<OrderForm>(emptyOrderForm);
+  const [refundOrderId, setRefundOrderId] = useState<string | null>(null);
+  const [discounts, setDiscounts] =
+    useState<DiscountCode[]>(initialDiscountCodes);
+  const [discountDialogOpen, setDiscountDialogOpen] = useState(false);
   const [paletteOpen, setPaletteOpen] = useState(false);
+  const [shortcutsOpen, setShortcutsOpen] = useState(false);
+  const [auditEvents, setAuditEvents] =
+    useState<AuditEvent[]>(initialAuditEvents);
   const canManageUsers = currentRole === "Owner" || currentRole === "Admin";
 
   const revenue = orders.reduce((sum, order) => sum + order.total, 0);
@@ -129,6 +164,24 @@ export function AdminDashboard({ userEmail }: { userEmail?: string }) {
   const orderPage = paginate(filteredOrders, page);
   const customerPage = paginate(filteredCustomers, page);
 
+  function logAudit(
+    action: AuditAction,
+    resource: AuditResource,
+    target: string,
+    detail?: string,
+  ) {
+    const event: AuditEvent = {
+      id: `ev-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+      timestamp: new Date().toISOString(),
+      actor: userEmail ?? "current user",
+      action,
+      resource,
+      target,
+      detail,
+    };
+    setAuditEvents((current) => [event, ...current]);
+  }
+
   function switchSection(nextSection: Section) {
     setSection(nextSection);
     setQuery("");
@@ -158,6 +211,28 @@ export function AdminDashboard({ userEmail }: { userEmail?: string }) {
       imageUrl: product.imageUrl,
     });
     setProductDialogOpen(true);
+    recents.push({ type: "product", id: product.id, label: product.name });
+  }
+
+  function handleRecentSelect(item: RecentItem) {
+    setPaletteOpen(false);
+    if (item.type === "product") {
+      const product = products.find((entry) => entry.id === item.id);
+      if (product) {
+        switchSection("products");
+        openEditProduct(product);
+      } else {
+        recents.remove("product", item.id);
+      }
+      return;
+    }
+    if (item.type === "order") {
+      switchSection("orders");
+      return;
+    }
+    if (item.type === "category") {
+      switchSection("categories");
+    }
   }
 
   function saveProduct() {
@@ -173,23 +248,108 @@ export function AdminDashboard({ userEmail }: { userEmail?: string }) {
             : product,
         ),
       );
+      logAudit("updated", "product", productForm.name);
     } else {
-      setProducts((current) => [
-        {
-          id: `prd-${Date.now()}`,
-          ...productForm,
-        },
-        ...current,
-      ]);
+      const created = {
+        id: `prd-${Date.now()}`,
+        ...productForm,
+      };
+      setProducts((current) => [created, ...current]);
+      logAudit("created", "product", productForm.name);
     }
 
     setProductDialogOpen(false);
   }
 
+  function bulkDeleteProducts(ids: string[]) {
+    if (ids.length === 0) {
+      return;
+    }
+    const removed = products.filter((product) => ids.includes(product.id));
+    setProducts((current) =>
+      current.filter((product) => !ids.includes(product.id)),
+    );
+    logAudit(
+      "deleted",
+      "product",
+      `${removed.length} product${removed.length === 1 ? "" : "s"}`,
+    );
+    toast({
+      title: `Deleted ${removed.length} product${removed.length === 1 ? "" : "s"}`,
+      tone: "destructive",
+      action: {
+        label: "Undo",
+        onClick: () => {
+          setProducts((current) => [...removed, ...current]);
+        },
+      },
+    });
+  }
+
+  function bulkUpdateProductStatus(ids: string[], status: Product["status"]) {
+    if (ids.length === 0) {
+      return;
+    }
+    setProducts((current) =>
+      current.map((product) =>
+        ids.includes(product.id) ? { ...product, status } : product,
+      ),
+    );
+    logAudit(
+      "status_changed",
+      "product",
+      `${ids.length} product${ids.length === 1 ? "" : "s"}`,
+      `→ ${status}`,
+    );
+    toast({
+      title: `Set ${ids.length} product${ids.length === 1 ? "" : "s"} to ${status}`,
+    });
+  }
+
+  function bulkUpdateOrderStatus(ids: string[], status: OrderStatus) {
+    if (ids.length === 0) {
+      return;
+    }
+    setOrders((current) =>
+      current.map((order) =>
+        ids.includes(order.id) ? { ...order, status } : order,
+      ),
+    );
+    logAudit(
+      "status_changed",
+      "order",
+      `${ids.length} order${ids.length === 1 ? "" : "s"}`,
+      `→ ${status}`,
+    );
+    toast({
+      title: `Set ${ids.length} order${ids.length === 1 ? "" : "s"} to ${status}`,
+    });
+  }
+
   function deleteProduct(productId: string) {
+    const removed = products.find((product) => product.id === productId);
+    const index = products.findIndex((product) => product.id === productId);
     setProducts((current) =>
       current.filter((product) => product.id !== productId),
     );
+    if (removed) {
+      logAudit("deleted", "product", removed.name);
+      toast({
+        title: `Deleted "${removed.name}"`,
+        description: "Product removed from the catalog.",
+        tone: "destructive",
+        action: {
+          label: "Undo",
+          onClick: () => {
+            setProducts((current) => {
+              const next = [...current];
+              next.splice(Math.min(index, next.length), 0, removed);
+              return next;
+            });
+          },
+        },
+      });
+    }
   }
 
   function openNewCategory() {
@@ -204,18 +364,43 @@ export function AdminDashboard({ userEmail }: { userEmail?: string }) {
       return;
     }
 
-    setCategories((current) => [
-      ...current,
-      { id: `cat-${Date.now()}`, name, productCount: 0 },
-    ]);
+    const newCategory = { id: `cat-${Date.now()}`, name, productCount: 0 };
+    setCategories((current) => [...current, newCategory]);
     setCategoryForm(emptyCategoryForm);
     setCategoryDialogOpen(false);
+    logAudit("created", "category", name);
+    recents.push({
+      type: "category",
+      id: newCategory.id,
+      label: newCategory.name,
+    });
   }
 
   function deleteCategory(categoryId: string) {
+    const removed = categories.find((category) => category.id === categoryId);
+    const index = categories.findIndex(
+      (category) => category.id === categoryId,
+    );
     setCategories((current) =>
       current.filter((category) => category.id !== categoryId),
     );
+    if (removed) {
+      logAudit("deleted", "category", removed.name);
+      toast({
+        title: `Deleted "${removed.name}"`,
+        tone: "destructive",
+        action: {
+          label: "Undo",
+          onClick: () => {
+            setCategories((current) => {
+              const next = [...current];
+              next.splice(Math.min(index, next.length), 0, removed);
+              return next;
+            });
+          },
+        },
+      });
+    }
   }
 
   function openNewOrder() {
@@ -229,17 +414,93 @@ export function AdminDashboard({ userEmail }: { userEmail?: string }) {
     }
 
     const today = new Date().toISOString().slice(0, 10);
-
-    setOrders((current) => [
-      {
-        id: `ORD-${Math.floor(1000 + Math.random() * 9000)}`,
-        date: today,
-        ...orderForm,
-      },
-      ...current,
-    ]);
+    const newOrder = {
+      id: `ORD-${Math.floor(1000 + Math.random() * 9000)}`,
+      date: today,
+      ...orderForm,
+    };
+    setOrders((current) => [newOrder, ...current]);
     setOrderForm(emptyOrderForm);
     setOrderDialogOpen(false);
+    logAudit("created", "order", newOrder.id, `${newOrder.customer}`);
+    recents.push({
+      type: "order",
+      id: newOrder.id,
+      label: `${newOrder.id} · ${newOrder.customer}`,
+    });
+  }
+
+  function openNewDiscount() {
+    setDiscountDialogOpen(true);
+  }
+
+  function saveDiscount(form: DiscountFormState) {
+    const code = form.code.trim().toUpperCase();
+    if (!code) {
+      return;
+    }
+    const newDiscount: DiscountCode = {
+      id: `disc-${Date.now()}`,
+      code,
+      kind: form.kind,
+      value: form.value,
+      status: form.status,
+      expiresAt: form.expiresAt || undefined,
+      maxUses: form.maxUses > 0 ? form.maxUses : undefined,
+      usedCount: 0,
+    };
+    setDiscounts((current) => [newDiscount, ...current]);
+    setDiscountDialogOpen(false);
+    logAudit(
+      "created",
+      "discount",
+      code,
+      form.kind === "percent" ? `${form.value}% off` : `$${form.value} off`,
+    );
+    toast({ title: `Created code ${code}` });
+  }
+
+  function deleteDiscount(id: string) {
+    const removed = discounts.find((entry) => entry.id === id);
+    setDiscounts((current) => current.filter((entry) => entry.id !== id));
+    if (removed) {
+      logAudit("deleted", "discount", removed.code);
+      toast({
+        title: `Deleted code ${removed.code}`,
+        tone: "destructive",
+        action: {
+          label: "Undo",
+          onClick: () => setDiscounts((current) => [removed, ...current]),
+        },
+      });
+    }
+  }
+
+  function openRefund(orderId: string) {
+    setRefundOrderId(orderId);
+  }
+
+  function confirmRefund(amount: number, reason: string) {
+    if (!refundOrderId) {
+      return;
+    }
+    const target = orders.find((order) => order.id === refundOrderId);
+    if (!target) {
+      return;
+    }
+    const isPartial = amount < target.total;
+    setOrders((current) =>
+      current.map((order) =>
+        order.id === refundOrderId ? { ...order, status: "Refunded" } : order,
+      ),
+    );
+    const detail = `$${amount.toFixed(2)}${isPartial ? " (partial)" : ""}${reason ? ` · ${reason}` : ""}`;
+    logAudit("status_changed", "order", target.id, `Refunded · ${detail}`);
+    toast({
+      title: `Refunded ${target.id}`,
+      description: detail,
+    });
+    setRefundOrderId(null);
   }
 
   function updateOrderStatus(orderId: string, status: OrderStatus) {
@@ -248,6 +509,7 @@ export function AdminDashboard({ userEmail }: { userEmail?: string }) {
         order.id === orderId ? { ...order, status } : order,
       ),
     );
+    logAudit("status_changed", "order", orderId, `→ ${status}`);
   }
 
   function updateUserRole(userId: string, role: AdminRole) {
@@ -322,6 +584,12 @@ export function AdminDashboard({ userEmail }: { userEmail?: string }) {
       }
 
       if (!isTyping && !paletteOpen) {
+        if (event.key === "?" || (event.shiftKey && event.key === "/")) {
+          event.preventDefault();
+          setShortcutsOpen((current) => !current);
+          return;
+        }
+
         const numberKey = Number(event.key);
 
         if (Number.isInteger(numberKey) && numberKey >= 1 && numberKey <= navItems.length) {
@@ -379,6 +647,9 @@ export function AdminDashboard({ userEmail }: { userEmail?: string }) {
 
           <div className="h-5 w-px bg-border" aria-hidden />
 
+          <DensityToggle />
+          <ThemeToggle />
+
           <Button
             variant="ghost"
             size="sm"
@@ -407,6 +678,8 @@ export function AdminDashboard({ userEmail }: { userEmail?: string }) {
           ) : null}
           {section === "products" ? (
             <ProductsSection
+              bulkDeleteProducts={bulkDeleteProducts}
+              bulkUpdateProductStatus={bulkUpdateProductStatus}
               categories={categories}
               categoryFilter={categoryFilter}
               deleteProduct={deleteProduct}
@@ -431,9 +704,18 @@ export function AdminDashboard({ userEmail }: { userEmail?: string }) {
               openNewCategory={openNewCategory}
             />
           ) : null}
+          {section === "discounts" ? (
+            <DiscountsSection
+              discounts={discounts}
+              openNewDiscount={openNewDiscount}
+              deleteDiscount={deleteDiscount}
+            />
+          ) : null}
           {section === "orders" ? (
             <OrdersSection
+              bulkUpdateOrderStatus={bulkUpdateOrderStatus}
               openNewOrder={openNewOrder}
+              openRefund={openRefund}
               orders={orderPage.items}
               page={orderPage.page}
               query={query}
@@ -457,6 +739,7 @@ export function AdminDashboard({ userEmail }: { userEmail?: string }) {
               totalCount={filteredCustomers.length}
             />
           ) : null}
+          {section === "audit" ? <AuditLogSection events={auditEvents} /> : null}
           {section === "users" ? (
             <UsersSection
               canManageUsers={canManageUsers}
@@ -500,12 +783,34 @@ export function AdminDashboard({ userEmail }: { userEmail?: string }) {
         setForm={setOrderForm}
       />
 
+      <RefundDialog
+        order={orders.find((order) => order.id === refundOrderId) ?? null}
+        open={refundOrderId !== null}
+        onOpenChange={(open) => {
+          if (!open) {
+            setRefundOrderId(null);
+          }
+        }}
+        onConfirm={confirmRefund}
+      />
+
+      <DiscountDialog
+        open={discountDialogOpen}
+        onOpenChange={setDiscountDialogOpen}
+        onSave={saveDiscount}
+      />
+
       <CommandPalette
         open={paletteOpen}
         onOpenChange={setPaletteOpen}
         setSection={switchSection}
         onSignOut={signOut}
+        onShowShortcuts={() => setShortcutsOpen(true)}
+        recents={recents.items}
+        onSelectRecent={handleRecentSelect}
       />
+
+      <ShortcutsDialog open={shortcutsOpen} onOpenChange={setShortcutsOpen} />
     </div>
   );
 }

@@ -52,45 +52,45 @@
 }
 
 :root {
-  --background: oklch(0.155 0.006 240);
-  --foreground: oklch(0.97 0.004 240);
-  --card: oklch(0.195 0.006 240);
-  --card-foreground: oklch(0.97 0.004 240);
-  --popover: oklch(0.21 0.007 240);
-  --popover-foreground: oklch(0.97 0.004 240);
-  --primary: oklch(0.78 0.13 200);
-  --primary-foreground: oklch(0.14 0.01 240);
-  --secondary: oklch(0.245 0.008 240);
-  --secondary-foreground: oklch(0.94 0.005 240);
-  --muted: oklch(0.225 0.007 240);
-  --muted-foreground: oklch(0.66 0.012 240);
-  --accent: oklch(0.78 0.13 200);
-  --accent-foreground: oklch(0.14 0.01 240);
-  --success: oklch(0.74 0.16 152);
-  --warning: oklch(0.82 0.15 80);
-  --info: oklch(0.78 0.13 230);
-  --destructive: oklch(0.7 0.21 22);
-  --border: oklch(1 0 0 / 8%);
-  --input: oklch(1 0 0 / 10%);
-  --ring: oklch(0.78 0.13 200 / 60%);
-  --chart-1: oklch(0.78 0.13 200);
-  --chart-2: oklch(0.74 0.16 152);
-  --chart-3: oklch(0.82 0.15 80);
-  --chart-4: oklch(0.7 0.21 22);
-  --chart-5: oklch(0.68 0.14 285);
-  --chart-cyan: oklch(0.78 0.13 200);
-  --chart-lime: oklch(0.74 0.16 152);
-  --chart-amber: oklch(0.82 0.15 80);
-  --chart-rose: oklch(0.7 0.21 22);
+  --background: oklch(0.985 0.003 240);
+  --foreground: oklch(0.18 0.006 240);
+  --card: oklch(0.995 0.002 240);
+  --card-foreground: oklch(0.18 0.006 240);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.18 0.006 240);
+  --primary: oklch(0.5 0.15 200);
+  --primary-foreground: oklch(0.99 0.004 240);
+  --secondary: oklch(0.96 0.004 240);
+  --secondary-foreground: oklch(0.22 0.006 240);
+  --muted: oklch(0.965 0.004 240);
+  --muted-foreground: oklch(0.48 0.012 240);
+  --accent: oklch(0.5 0.15 200);
+  --accent-foreground: oklch(0.99 0.004 240);
+  --success: oklch(0.55 0.16 152);
+  --warning: oklch(0.62 0.18 80);
+  --info: oklch(0.55 0.15 230);
+  --destructive: oklch(0.55 0.22 22);
+  --border: oklch(0 0 0 / 9%);
+  --input: oklch(0 0 0 / 12%);
+  --ring: oklch(0.5 0.15 200 / 50%);
+  --chart-1: oklch(0.55 0.15 200);
+  --chart-2: oklch(0.6 0.16 152);
+  --chart-3: oklch(0.7 0.16 80);
+  --chart-4: oklch(0.6 0.22 22);
+  --chart-5: oklch(0.55 0.16 285);
+  --chart-cyan: oklch(0.55 0.15 200);
+  --chart-lime: oklch(0.6 0.16 152);
+  --chart-amber: oklch(0.7 0.16 80);
+  --chart-rose: oklch(0.6 0.22 22);
   --radius: 0.5rem;
-  --sidebar: oklch(0.13 0.006 240);
-  --sidebar-foreground: oklch(0.88 0.005 240);
-  --sidebar-primary: oklch(0.78 0.13 200);
-  --sidebar-primary-foreground: oklch(0.13 0.006 240);
-  --sidebar-accent: oklch(0.225 0.008 240);
-  --sidebar-accent-foreground: oklch(0.97 0.004 240);
-  --sidebar-border: oklch(1 0 0 / 6%);
-  --sidebar-ring: oklch(0.78 0.13 200 / 60%);
+  --sidebar: oklch(0.985 0.002 240);
+  --sidebar-foreground: oklch(0.22 0.006 240);
+  --sidebar-primary: oklch(0.5 0.15 200);
+  --sidebar-primary-foreground: oklch(0.99 0.004 240);
+  --sidebar-accent: oklch(0.95 0.005 240);
+  --sidebar-accent-foreground: oklch(0.18 0.006 240);
+  --sidebar-border: oklch(0 0 0 / 7%);
+  --sidebar-ring: oklch(0.5 0.15 200 / 50%);
 }
 
 .dark {
@@ -140,8 +140,24 @@
   }
   html {
     @apply font-sans;
-    color-scheme: dark;
+    color-scheme: light;
     font-feature-settings: "cv11", "ss01", "ss03";
+    --table-row-h: 2.5rem;
+    --table-head-h: 2.25rem;
+    --table-cell-px: 0.75rem;
+  }
+  html.dark {
+    color-scheme: dark;
+  }
+  html[data-density="compact"] {
+    --table-row-h: 2rem;
+    --table-head-h: 1.75rem;
+    --table-cell-px: 0.625rem;
+  }
+  html[data-density="dense"] {
+    --table-row-h: 1.75rem;
+    --table-head-h: 1.5rem;
+    --table-cell-px: 0.5rem;
   }
   body {
     @apply bg-background text-foreground;
@@ -152,6 +168,32 @@
   option {
     background-color: var(--popover);
     color: var(--popover-foreground);
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    @keyframes admin-row-enter {
+      from {
+        opacity: 0;
+        transform: translateY(-4px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    [data-slot="table-body"] > tr {
+      animation: admin-row-enter 180ms ease-out both;
+    }
+    [data-slot="table-body"] > tr:nth-child(1)  { animation-delay: 0ms;   }
+    [data-slot="table-body"] > tr:nth-child(2)  { animation-delay: 20ms;  }
+    [data-slot="table-body"] > tr:nth-child(3)  { animation-delay: 40ms;  }
+    [data-slot="table-body"] > tr:nth-child(4)  { animation-delay: 60ms;  }
+    [data-slot="table-body"] > tr:nth-child(5)  { animation-delay: 80ms;  }
+    [data-slot="table-body"] > tr:nth-child(6)  { animation-delay: 100ms; }
+    [data-slot="table-body"] > tr:nth-child(7)  { animation-delay: 120ms; }
+    [data-slot="table-body"] > tr:nth-child(8)  { animation-delay: 140ms; }
+    [data-slot="table-body"] > tr:nth-child(9)  { animation-delay: 160ms; }
+    [data-slot="table-body"] > tr:nth-child(10) { animation-delay: 180ms; }
+    [data-slot="table-body"] > tr:nth-child(n+11) { animation-delay: 200ms; }
   }
   /* Hide native number-input spinners — they render in the OS palette and
      don't match the dark theme. Prefer keyboard input / +/- buttons. */

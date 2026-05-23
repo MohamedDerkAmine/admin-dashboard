@@ -1,13 +1,28 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { CornerDownLeftIcon, SearchIcon } from "lucide-react";
+import {
+  ClockIcon,
+  CornerDownLeftIcon,
+  KeyboardIcon,
+  PackageIcon,
+  SearchIcon,
+  ShoppingCartIcon,
+  TagsIcon,
+} from "lucide-react";
 
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Kbd } from "@/components/admin/kbd";
 import { navItems } from "@/components/admin/constants";
+import type { RecentItem } from "@/components/admin/recents";
 import type { Section } from "@/components/admin/types";
 import { cn } from "@/lib/utils";
+
+const recentIcons = {
+  product: PackageIcon,
+  order: ShoppingCartIcon,
+  category: TagsIcon,
+} as const;
 
 type Action = {
   id: string;
@@ -24,16 +39,33 @@ export function CommandPalette({
   onOpenChange,
   setSection,
   onSignOut,
+  onShowShortcuts,
+  recents,
+  onSelectRecent,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   setSection: (section: Section) => void;
   onSignOut: () => void;
+  onShowShortcuts: () => void;
+  recents: RecentItem[];
+  onSelectRecent: (item: RecentItem) => void;
 }) {
   const [query, setQuery] = useState("");
   const [active, setActive] = useState(0);
 
   const actions = useMemo<Action[]>(() => {
+    const recentActions: Action[] = recents.map((item) => ({
+      id: `recent-${item.type}-${item.id}`,
+      label: item.label,
+      hint: item.type,
+      icon: recentIcons[item.type] ?? ClockIcon,
+      group: "Recent",
+      onSelect: () => {
+        onSelectRecent(item);
+      },
+    }));
+
     const navActions: Action[] = navItems.map((item, index) => ({
       id: `nav-${item.id}`,
       label: `Go to ${item.label}`,
@@ -46,6 +78,21 @@ export function CommandPalette({
       },
       shortcut: index < 9 ? String(index + 1) : undefined,
     }));
+
+    const helpActions: Action[] = [
+      {
+        id: "show-shortcuts",
+        label: "Show keyboard shortcuts",
+        hint: "Press ?",
+        icon: KeyboardIcon,
+        group: "Help",
+        onSelect: () => {
+          onOpenChange(false);
+          onShowShortcuts();
+        },
+        shortcut: "?",
+      },
+    ];
 
     const sessionActions: Action[] = [
       {
@@ -60,8 +107,15 @@ export function CommandPalette({
       },
     ];
 
-    return [...navActions, ...sessionActions];
-  }, [setSection, onOpenChange, onSignOut]);
+    return [...recentActions, ...navActions, ...helpActions, ...sessionActions];
+  }, [
+    recents,
+    onSelectRecent,
+    setSection,
+    onOpenChange,
+    onSignOut,
+    onShowShortcuts,
+  ]);
 
   const filtered = useMemo(() => {
     const term = query.trim().toLowerCase();
