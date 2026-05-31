@@ -17,6 +17,7 @@ export function toneFor(status: StatusLike | string): Tone {
     case "Active":
     case "Delivered":
     case "VIP":
+    case "Approved":
       return "success";
     case "Processing":
     case "Shipped":
@@ -27,12 +28,17 @@ export function toneFor(status: StatusLike | string): Tone {
     case "Draft":
     case "Invited":
     case "New":
+    case "Requested":
       return "warning";
     case "Refunded":
     case "Archived":
     case "Suspended":
     case "Expired":
+    case "Denied":
+    case "Rejected":
       return "danger";
+    case "Flagged":
+      return "warning";
     default:
       return "neutral";
   }

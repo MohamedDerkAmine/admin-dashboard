@@ -1,8 +1,10 @@
 "use client";
 
-import { FilterXIcon, UsersIcon } from "lucide-react";
+import Link from "next/link";
+import { DownloadIcon, FilterXIcon, UsersIcon } from "lucide-react";
 
 import type { Customer } from "@/lib/admin-data";
+import { exportCsv } from "@/components/admin/csv";
 import {
   DataTable,
   SortableHead,
@@ -13,6 +15,7 @@ import { Pagination } from "@/components/admin/pagination";
 import { StatusDot } from "@/components/admin/status-dot";
 import { Toolbar } from "@/components/admin/toolbar";
 import { formatCurrency } from "@/components/admin/utils";
+import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import {
   TableBody,
@@ -59,6 +62,25 @@ export function CustomersSection({
             lifetime spend
           </p>
         </div>
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() =>
+            exportCsv(`customers-${new Date().toISOString().slice(0, 10)}.csv`, sorted, [
+              { header: "ID", accessor: (c) => c.id },
+              { header: "Name", accessor: (c) => c.name },
+              { header: "Email", accessor: (c) => c.email },
+              { header: "Segment", accessor: (c) => c.segment },
+              { header: "Orders", accessor: (c) => c.orders },
+              { header: "Spent", accessor: (c) => c.spent },
+              { header: "Last order", accessor: (c) => c.lastOrder },
+            ])
+          }
+          disabled={sorted.length === 0}
+        >
+          <DownloadIcon className="size-4" />
+          Export
+        </Button>
       </div>
       <Toolbar
         query={query}
@@ -122,9 +144,12 @@ export function CustomersSection({
                       .slice(0, 2)}
                   </div>
                   <div className="min-w-0">
-                    <p className="truncate text-sm font-medium">
+                    <Link
+                      href={`/customers/${customer.id}`}
+                      className="block truncate text-sm font-medium hover:text-primary hover:underline"
+                    >
                       {customer.name}
-                    </p>
+                    </Link>
                     <p className="truncate text-[11px] text-muted-foreground">
                       {customer.email}
                     </p>

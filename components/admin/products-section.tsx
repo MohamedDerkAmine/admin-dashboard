@@ -1,13 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { FilterXIcon, PackageIcon, PlusIcon } from "lucide-react";
+import { DownloadIcon, FilterXIcon, PackageIcon, PlusIcon } from "lucide-react";
 
 import type { Category, Product } from "@/lib/admin-data";
 import {
   BulkActionBar,
   SelectionCheckbox,
 } from "@/components/admin/bulk-action-bar";
+import { exportCsv } from "@/components/admin/csv";
 import {
   DataTable,
   SortableHead,
@@ -49,6 +50,7 @@ export function ProductsSection({
   categoryFilter,
   deleteProduct,
   openEditProduct,
+  openInventoryAdjustment,
   openNewProduct,
   page,
   products,
@@ -67,6 +69,7 @@ export function ProductsSection({
   categoryFilter: string;
   deleteProduct: (productId: string) => void;
   openEditProduct: (product: Product) => void;
+  openInventoryAdjustment: (productId: string) => void;
   openNewProduct: () => void;
   page: number;
   products: Product[];
@@ -110,10 +113,31 @@ export function ProductsSection({
             image preview
           </p>
         </div>
-        <Button size="sm" onClick={openNewProduct}>
-          <PlusIcon className="size-4" />
-          Add product
-        </Button>
+        <div className="flex items-center gap-1.5">
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() =>
+              exportCsv(`products-${new Date().toISOString().slice(0, 10)}.csv`, sorted, [
+                { header: "ID", accessor: (p) => p.id },
+                { header: "Name", accessor: (p) => p.name },
+                { header: "SKU", accessor: (p) => p.sku },
+                { header: "Category", accessor: (p) => p.category },
+                { header: "Status", accessor: (p) => p.status },
+                { header: "Price", accessor: (p) => p.price },
+                { header: "Stock", accessor: (p) => p.stock },
+              ])
+            }
+            disabled={sorted.length === 0}
+          >
+            <DownloadIcon className="size-4" />
+            Export
+          </Button>
+          <Button size="sm" onClick={openNewProduct}>
+            <PlusIcon className="size-4" />
+            Add product
+          </Button>
+        </div>
       </div>
       <SavedViews
         views={savedViews.views}
@@ -301,6 +325,10 @@ export function ProductsSection({
                 <RowActions
                   actions={[
                     { label: "Edit", onSelect: () => openEditProduct(product) },
+                    {
+                      label: "Adjust stock",
+                      onSelect: () => openInventoryAdjustment(product.id),
+                    },
                     {
                       label: "Delete",
                       onSelect: () => deleteProduct(product.id),

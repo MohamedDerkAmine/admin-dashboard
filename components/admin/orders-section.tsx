@@ -1,12 +1,14 @@
 "use client";
 
-import { FilterXIcon, PlusIcon, ShoppingCartIcon } from "lucide-react";
+import Link from "next/link";
+import { DownloadIcon, FilterXIcon, PlusIcon, ShoppingCartIcon } from "lucide-react";
 
 import type { Order, OrderStatus } from "@/lib/admin-data";
 import {
   BulkActionBar,
   SelectionCheckbox,
 } from "@/components/admin/bulk-action-bar";
+import { exportCsv } from "@/components/admin/csv";
 import { orderStatuses } from "@/components/admin/constants";
 import {
   DataTable,
@@ -103,10 +105,31 @@ export function OrdersSection({
             inline
           </p>
         </div>
-        <Button size="sm" onClick={openNewOrder}>
-          <PlusIcon className="size-4" />
-          Add order
-        </Button>
+        <div className="flex items-center gap-1.5">
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() =>
+              exportCsv(`orders-${new Date().toISOString().slice(0, 10)}.csv`, sorted, [
+                { header: "ID", accessor: (o) => o.id },
+                { header: "Customer", accessor: (o) => o.customer },
+                { header: "Email", accessor: (o) => o.email },
+                { header: "Status", accessor: (o) => o.status },
+                { header: "Items", accessor: (o) => o.items },
+                { header: "Total", accessor: (o) => o.total },
+                { header: "Date", accessor: (o) => o.date },
+              ])
+            }
+            disabled={sorted.length === 0}
+          >
+            <DownloadIcon className="size-4" />
+            Export
+          </Button>
+          <Button size="sm" onClick={openNewOrder}>
+            <PlusIcon className="size-4" />
+            Add order
+          </Button>
+        </div>
       </div>
       <SavedViews
         views={savedViews.views}
@@ -224,7 +247,12 @@ export function OrdersSection({
                   />
                 </TableCell>
                 <TableCell>
-                  <p className="font-mono text-sm font-medium">{order.id}</p>
+                  <Link
+                    href={`/orders/${order.id}`}
+                    className="block font-mono text-sm font-medium hover:text-primary hover:underline"
+                  >
+                    {order.id}
+                  </Link>
                   <p className="text-[11px] text-muted-foreground">
                     {order.items} item{order.items === 1 ? "" : "s"}
                   </p>

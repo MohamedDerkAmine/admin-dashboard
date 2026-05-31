@@ -1,8 +1,14 @@
 import {
+  BarChart3Icon,
+  CalendarClockIcon,
   LayoutDashboardIcon,
+  MailIcon,
+  MessageSquareIcon,
   PackageIcon,
   PercentIcon,
+  RotateCcwIcon,
   ScrollTextIcon,
+  SettingsIcon,
   ShieldIcon,
   ShoppingCartIcon,
   TagsIcon,
@@ -43,13 +49,19 @@ export const navItems: Array<{
   icon: LucideIcon;
 }> = [
   { id: "dashboard", label: "Dashboard", icon: LayoutDashboardIcon },
+  { id: "analytics", label: "Analytics", icon: BarChart3Icon },
   { id: "products", label: "Products", icon: PackageIcon },
   { id: "categories", label: "Categories", icon: TagsIcon },
   { id: "discounts", label: "Discounts", icon: PercentIcon },
   { id: "orders", label: "Orders", icon: ShoppingCartIcon },
+  { id: "returns", label: "Returns", icon: RotateCcwIcon },
+  { id: "reviews", label: "Reviews", icon: MessageSquareIcon },
   { id: "customers", label: "Customers", icon: UsersIcon },
   { id: "users", label: "Users & Roles", icon: ShieldIcon },
   { id: "audit", label: "Audit log", icon: ScrollTextIcon },
+  { id: "emails", label: "Email templates", icon: MailIcon },
+  { id: "reports", label: "Reports", icon: CalendarClockIcon },
+  { id: "settings", label: "Settings", icon: SettingsIcon },
 ];
 
 export const emptyProductForm: ProductForm = {

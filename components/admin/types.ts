@@ -8,13 +8,19 @@ import type {
 
 export type Section =
   | "dashboard"
+  | "analytics"
   | "products"
   | "categories"
   | "discounts"
   | "orders"
   | "customers"
+  | "returns"
+  | "reviews"
   | "users"
-  | "audit";
+  | "audit"
+  | "emails"
+  | "reports"
+  | "settings";
 
 export type ProductForm = Omit<Product, "id">;
 
