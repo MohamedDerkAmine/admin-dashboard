@@ -12,7 +12,6 @@ import { createClient } from "@/lib/client";
 
 export function LoginForm() {
   const router = useRouter();
-  const supabase = createClient();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [mode, setMode] = useState<"signin" | "signup">("signin");
@@ -24,21 +23,29 @@ export function LoginForm() {
     setIsPending(true);
     setMessage("");
 
-    const action =
-      mode === "signin"
-        ? supabase.auth.signInWithPassword({ email, password })
-        : supabase.auth.signUp({ email, password });
+    try {
+      const supabase = createClient();
+      const { error } =
+        mode === "signin"
+          ? await supabase.auth.signInWithPassword({ email, password })
+          : await supabase.auth.signUp({ email, password });
 
-    const { error } = await action;
+      if (error) {
+        setMessage(error.message);
+        setIsPending(false);
+        return;
+      }
 
-    if (error) {
-      setMessage(error.message);
+      router.refresh();
+      router.push("/");
+    } catch (error) {
+      setMessage(
+        error instanceof Error
+          ? error.message
+          : "Unable to authenticate. Please try again.",
+      );
       setIsPending(false);
-      return;
     }
-
-    router.refresh();
-    router.push("/");
   }
 
   return (
