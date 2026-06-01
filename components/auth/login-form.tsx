@@ -1,21 +1,54 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Loader2Icon, TriangleAlertIcon } from "lucide-react";
 
-import { authenticate } from "@/app/auth/login/actions";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 export function LoginForm() {
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [mode, setMode] = useState<"signin" | "signup">("signin");
-  const [state, formAction, isPending] = useActionState(authenticate, {
-    message: "",
-  });
+  const [message, setMessage] = useState("");
+  const [isPending, setIsPending] = useState(false);
+
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setIsPending(true);
+    setMessage("");
+
+    const response = await fetch("/api/auth", {
+      body: JSON.stringify({ email, mode, password }),
+      headers: { "Content-Type": "application/json" },
+      method: "POST",
+    }).catch(() => null);
+
+    if (!response) {
+      setMessage("Unable to reach the auth server. Please try again.");
+      setIsPending(false);
+      return;
+    }
+
+    const result = await response.json().catch(() => ({}));
+
+    if (!response.ok) {
+      setMessage(
+        typeof result.message === "string"
+          ? result.message
+          : "Unable to authenticate. Please try again.",
+      );
+      setIsPending(false);
+      return;
+    }
+
+    router.refresh();
+    router.push("/");
+  }
 
   return (
     <Card className="w-full gap-0 py-0">
@@ -29,8 +62,7 @@ export function LoginForm() {
             : "We'll create a Supabase account and sign you in."}
         </p>
       </div>
-      <form className="grid gap-3 p-5" action={formAction}>
-        <input type="hidden" name="mode" value={mode} />
+      <form className="grid gap-3 p-5" onSubmit={handleSubmit}>
         <div className="grid gap-1.5">
           <Label htmlFor="email" className="text-xs text-muted-foreground">
             Email
@@ -76,10 +108,10 @@ export function LoginForm() {
             value={password}
           />
         </div>
-        {state.message ? (
+        {message ? (
           <div className="flex items-start gap-2 rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-xs text-destructive">
             <TriangleAlertIcon className="mt-0.5 size-3.5 shrink-0" />
-            <span>{state.message}</span>
+            <span>{message}</span>
           </div>
         ) : null}
         <Button

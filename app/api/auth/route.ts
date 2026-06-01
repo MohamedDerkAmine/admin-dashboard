@@ -1,23 +1,18 @@
-"use server";
-
-import { redirect } from "next/navigation";
-
 import { createClient } from "@/lib/server";
 
-export type LoginFormState = {
-  message: string;
-};
+type AuthMode = "signin" | "signup";
 
-export async function authenticate(
-  _previousState: LoginFormState,
-  formData: FormData,
-): Promise<LoginFormState> {
-  const email = String(formData.get("email") ?? "").trim();
-  const password = String(formData.get("password") ?? "");
-  const mode = formData.get("mode") === "signup" ? "signup" : "signin";
+export async function POST(request: Request) {
+  const body = await request.json().catch(() => null);
+  const email = typeof body?.email === "string" ? body.email.trim() : "";
+  const password = typeof body?.password === "string" ? body.password : "";
+  const mode: AuthMode = body?.mode === "signup" ? "signup" : "signin";
 
   if (!email || !password) {
-    return { message: "Enter an email and password." };
+    return Response.json(
+      { message: "Enter an email and password." },
+      { status: 400 },
+    );
   }
 
   const supabase = await createClient();
@@ -32,10 +27,13 @@ export async function authenticate(
   }));
 
   if (error) {
-    return { message: getAuthErrorMessage(error) };
+    return Response.json(
+      { message: getAuthErrorMessage(error) },
+      { status: 400 },
+    );
   }
 
-  redirect("/");
+  return Response.json({ ok: true });
 }
 
 function getAuthErrorMessage(error: Error) {
