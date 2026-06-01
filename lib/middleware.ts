@@ -42,11 +42,15 @@ export async function updateSession(request: NextRequest) {
   const isAuthRoute =
     request.nextUrl.pathname.startsWith('/auth') ||
     request.nextUrl.pathname.startsWith('/api/auth')
+  const isIntegrationRoute =
+    request.nextUrl.pathname.startsWith('/api/email') ||
+    request.nextUrl.pathname.startsWith('/api/stripe')
 
   if (
     !user &&
     !request.nextUrl.pathname.startsWith('/login') &&
-    !isAuthRoute
+    !isAuthRoute &&
+    !isIntegrationRoute
   ) {
     // no user, potentially respond by redirecting the user to the login page
     const url = request.nextUrl.clone()

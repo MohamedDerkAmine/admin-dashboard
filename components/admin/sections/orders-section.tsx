@@ -22,6 +22,7 @@ import { SavedViews, useSavedViews } from "@/components/admin/shared/saved-views
 import { StatusDot, toneFor } from "@/components/admin/shared/status-dot";
 import { FilterSelect, Toolbar } from "@/components/admin/shared/toolbar";
 import { useSelection } from "@/components/admin/shared/use-selection";
+import { IntegrationsDemo } from "@/components/admin/sections/integrations-demo";
 import { formatCurrency } from "@/components/admin/shared/utils";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -131,6 +132,7 @@ export function OrdersSection({
           </Button>
         </div>
       </div>
+      <IntegrationsDemo order={sorted[0]} />
       <SavedViews
         views={savedViews.views}
         currentFilters={{ query, statusFilter }}
