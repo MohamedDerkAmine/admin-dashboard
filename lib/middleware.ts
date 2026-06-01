@@ -43,6 +43,7 @@ export async function updateSession(request: NextRequest) {
     request.nextUrl.pathname.startsWith('/auth') ||
     request.nextUrl.pathname.startsWith('/api/auth')
   const isIntegrationRoute =
+    request.nextUrl.pathname.startsWith('/api/ai') ||
     request.nextUrl.pathname.startsWith('/api/email') ||
     request.nextUrl.pathname.startsWith('/api/stripe')
 
