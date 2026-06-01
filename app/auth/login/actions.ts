@@ -21,14 +21,31 @@ export async function authenticate(
   }
 
   const supabase = await createClient();
-  const { error } =
-    mode === "signin"
-      ? await supabase.auth.signInWithPassword({ email, password })
-      : await supabase.auth.signUp({ email, password });
+  const { error } = await (mode === "signin"
+    ? supabase.auth.signInWithPassword({ email, password })
+    : supabase.auth.signUp({ email, password })
+  ).catch((error: unknown) => ({
+    error:
+      error instanceof Error
+        ? error
+        : new Error("Unable to reach Supabase. Please try again."),
+  }));
 
   if (error) {
-    return { message: error.message };
+    return { message: getAuthErrorMessage(error) };
   }
 
   redirect("/");
+}
+
+function getAuthErrorMessage(error: Error) {
+  if (
+    error.message === "fetch failed" ||
+    error.message.includes("ENOTFOUND") ||
+    error.message.includes("getaddrinfo")
+  ) {
+    return "Unable to reach Supabase. Check NEXT_PUBLIC_SUPABASE_URL in .env.local or try again when the project is reachable.";
+  }
+
+  return error.message;
 }
