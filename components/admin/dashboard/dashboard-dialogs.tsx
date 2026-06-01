@@ -5,197 +5,200 @@ import type {
   Order,
   Product,
 } from "@/lib/admin-data";
-import { CategoryDialog } from "@/components/admin/category-dialog";
-import { CommandPalette } from "@/components/admin/command-palette";
+import { CategoryDialog } from "@/components/admin/dialogs/category-dialog";
+import { CommandPalette } from "@/components/admin/dialogs/command-palette";
 import {
   DiscountDialog,
   type DiscountFormState,
-} from "@/components/admin/discount-dialog";
+} from "@/components/admin/dialogs/discount-dialog";
 import {
   InventoryDialog,
   type InventoryAdjustmentReason,
-} from "@/components/admin/inventory-dialog";
-import { OrderDialog } from "@/components/admin/order-dialog";
-import { ProductDialog } from "@/components/admin/product-dialog";
-import type { RecentItem } from "@/components/admin/recents";
-import { RefundDialog } from "@/components/admin/refund-dialog";
+} from "@/components/admin/dialogs/inventory-dialog";
+import { OrderDialog } from "@/components/admin/dialogs/order-dialog";
+import { ProductDialog } from "@/components/admin/dialogs/product-dialog";
+import type { RecentItem } from "@/components/admin/shared/recents";
+import { RefundDialog } from "@/components/admin/dialogs/refund-dialog";
 import {
   ReportDialog,
   type ReportFormState,
-} from "@/components/admin/report-dialog";
-import { ShortcutsDialog } from "@/components/admin/shortcuts-dialog";
+} from "@/components/admin/dialogs/report-dialog";
+import { ShortcutsDialog } from "@/components/admin/dialogs/shortcuts-dialog";
 import type {
   CategoryForm,
   OrderForm,
   ProductForm,
   Section,
-} from "@/components/admin/types";
+} from "@/components/admin/shared/types";
 
-export function DashboardDialogs(props: {
-  // product
-  productDialogOpen: boolean;
-  setProductDialogOpen: (open: boolean) => void;
+type ProductDialogControls = {
+  open: boolean;
+  setOpen: (open: boolean) => void;
   editingProductId: string | null;
-  productForm: ProductForm;
-  setProductForm: (form: ProductForm) => void;
-  saveProduct: () => void;
+  form: ProductForm;
+  setForm: (form: ProductForm) => void;
+  save: () => void;
   categories: Category[];
-  // category
-  categoryDialogOpen: boolean;
-  setCategoryDialogOpen: (open: boolean) => void;
-  categoryForm: CategoryForm;
-  setCategoryForm: (form: CategoryForm) => void;
-  saveCategory: () => void;
-  // order
-  orderDialogOpen: boolean;
-  setOrderDialogOpen: (open: boolean) => void;
-  orderForm: OrderForm;
-  setOrderForm: (form: OrderForm) => void;
-  saveOrder: () => void;
-  // inventory
-  inventoryProduct: Product | null;
-  setInventoryProductId: (id: string | null) => void;
-  applyInventoryAdjustment: (
+};
+
+type CategoryDialogControls = {
+  open: boolean;
+  setOpen: (open: boolean) => void;
+  form: CategoryForm;
+  setForm: (form: CategoryForm) => void;
+  save: () => void;
+};
+
+type OrderDialogControls = {
+  open: boolean;
+  setOpen: (open: boolean) => void;
+  form: OrderForm;
+  setForm: (form: OrderForm) => void;
+  save: () => void;
+};
+
+type InventoryDialogControls = {
+  product: Product | null;
+  setProductId: (id: string | null) => void;
+  applyAdjustment: (
     productId: string,
     delta: number,
     reason: InventoryAdjustmentReason,
     note: string,
   ) => void;
-  // refund
-  refundOrder: Order | null;
-  setRefundOrderId: (id: string | null) => void;
-  confirmRefund: (amount: number, reason: string) => void;
-  // discount
-  discountDialogOpen: boolean;
-  setDiscountDialogOpen: (open: boolean) => void;
-  saveDiscount: (form: DiscountFormState) => void;
-  // report
-  reportDialogOpen: boolean;
-  setReportDialogOpen: (open: boolean) => void;
-  saveScheduledReport: (form: ReportFormState) => void;
-  // command palette + shortcuts
-  paletteOpen: boolean;
-  setPaletteOpen: (open: boolean) => void;
-  shortcutsOpen: boolean;
-  setShortcutsOpen: (open: boolean) => void;
+};
+
+type RefundDialogControls = {
+  order: Order | null;
+  setOrderId: (id: string | null) => void;
+  confirm: (amount: number, reason: string) => void;
+};
+
+type DiscountDialogControls = {
+  open: boolean;
+  setOpen: (open: boolean) => void;
+  save: (form: DiscountFormState) => void;
+};
+
+type ReportDialogControls = {
+  open: boolean;
+  setOpen: (open: boolean) => void;
+  save: (form: ReportFormState) => void;
+};
+
+type CommandPaletteControls = {
+  open: boolean;
+  setOpen: (open: boolean) => void;
   switchSection: (section: Section) => void;
   signOut: () => void;
   recents: RecentItem[];
-  handleRecentSelect: (item: RecentItem) => void;
+  selectRecent: (item: RecentItem) => void;
+  showShortcuts: () => void;
+};
+
+type ShortcutsDialogControls = {
+  open: boolean;
+  setOpen: (open: boolean) => void;
+};
+
+export function DashboardDialogs({
+  productDialog,
+  categoryDialog,
+  orderDialog,
+  inventoryDialog,
+  refundDialog,
+  discountDialog,
+  reportDialog,
+  commandPalette,
+  shortcutsDialog,
+}: {
+  productDialog: ProductDialogControls;
+  categoryDialog: CategoryDialogControls;
+  orderDialog: OrderDialogControls;
+  inventoryDialog: InventoryDialogControls;
+  refundDialog: RefundDialogControls;
+  discountDialog: DiscountDialogControls;
+  reportDialog: ReportDialogControls;
+  commandPalette: CommandPaletteControls;
+  shortcutsDialog: ShortcutsDialogControls;
 }) {
-  const {
-    productDialogOpen,
-    setProductDialogOpen,
-    editingProductId,
-    productForm,
-    setProductForm,
-    saveProduct,
-    categories,
-    categoryDialogOpen,
-    setCategoryDialogOpen,
-    categoryForm,
-    setCategoryForm,
-    saveCategory,
-    orderDialogOpen,
-    setOrderDialogOpen,
-    orderForm,
-    setOrderForm,
-    saveOrder,
-    inventoryProduct,
-    setInventoryProductId,
-    applyInventoryAdjustment,
-    refundOrder,
-    setRefundOrderId,
-    confirmRefund,
-    discountDialogOpen,
-    setDiscountDialogOpen,
-    saveDiscount,
-    reportDialogOpen,
-    setReportDialogOpen,
-    saveScheduledReport,
-    paletteOpen,
-    setPaletteOpen,
-    shortcutsOpen,
-    setShortcutsOpen,
-    switchSection,
-    signOut,
-    recents,
-    handleRecentSelect,
-  } = props;
 
   return (
     <>
       <ProductDialog
-        categories={categories}
-        editingProductId={editingProductId}
-        onOpenChange={setProductDialogOpen}
-        onSave={saveProduct}
-        open={productDialogOpen}
-        productForm={productForm}
-        setProductForm={setProductForm}
+        categories={productDialog.categories}
+        editingProductId={productDialog.editingProductId}
+        onOpenChange={productDialog.setOpen}
+        onSave={productDialog.save}
+        open={productDialog.open}
+        productForm={productDialog.form}
+        setProductForm={productDialog.setForm}
       />
 
       <CategoryDialog
-        form={categoryForm}
-        onOpenChange={setCategoryDialogOpen}
-        onSave={saveCategory}
-        open={categoryDialogOpen}
-        setForm={setCategoryForm}
+        form={categoryDialog.form}
+        onOpenChange={categoryDialog.setOpen}
+        onSave={categoryDialog.save}
+        open={categoryDialog.open}
+        setForm={categoryDialog.setForm}
       />
 
       <OrderDialog
-        form={orderForm}
-        onOpenChange={setOrderDialogOpen}
-        onSave={saveOrder}
-        open={orderDialogOpen}
-        setForm={setOrderForm}
+        form={orderDialog.form}
+        onOpenChange={orderDialog.setOpen}
+        onSave={orderDialog.save}
+        open={orderDialog.open}
+        setForm={orderDialog.setForm}
       />
 
       <InventoryDialog
-        product={inventoryProduct}
-        open={inventoryProduct !== null}
+        product={inventoryDialog.product}
+        open={inventoryDialog.product !== null}
         onOpenChange={(open) => {
           if (!open) {
-            setInventoryProductId(null);
+            inventoryDialog.setProductId(null);
           }
         }}
-        onConfirm={applyInventoryAdjustment}
+        onConfirm={inventoryDialog.applyAdjustment}
       />
 
       <RefundDialog
-        order={refundOrder}
-        open={refundOrder !== null}
+        order={refundDialog.order}
+        open={refundDialog.order !== null}
         onOpenChange={(open) => {
           if (!open) {
-            setRefundOrderId(null);
+            refundDialog.setOrderId(null);
           }
         }}
-        onConfirm={confirmRefund}
+        onConfirm={refundDialog.confirm}
       />
 
       <DiscountDialog
-        open={discountDialogOpen}
-        onOpenChange={setDiscountDialogOpen}
-        onSave={saveDiscount}
+        open={discountDialog.open}
+        onOpenChange={discountDialog.setOpen}
+        onSave={discountDialog.save}
       />
 
       <ReportDialog
-        open={reportDialogOpen}
-        onOpenChange={setReportDialogOpen}
-        onSave={saveScheduledReport}
+        open={reportDialog.open}
+        onOpenChange={reportDialog.setOpen}
+        onSave={reportDialog.save}
       />
 
       <CommandPalette
-        open={paletteOpen}
-        onOpenChange={setPaletteOpen}
-        setSection={switchSection}
-        onSignOut={signOut}
-        onShowShortcuts={() => setShortcutsOpen(true)}
-        recents={recents}
-        onSelectRecent={handleRecentSelect}
+        open={commandPalette.open}
+        onOpenChange={commandPalette.setOpen}
+        setSection={commandPalette.switchSection}
+        onSignOut={commandPalette.signOut}
+        onShowShortcuts={commandPalette.showShortcuts}
+        recents={commandPalette.recents}
+        onSelectRecent={commandPalette.selectRecent}
       />
 
-      <ShortcutsDialog open={shortcutsOpen} onOpenChange={setShortcutsOpen} />
+      <ShortcutsDialog
+        open={shortcutsDialog.open}
+        onOpenChange={shortcutsDialog.setOpen}
+      />
     </>
   );
 }

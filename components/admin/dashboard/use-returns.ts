@@ -7,7 +7,7 @@ import {
   type Order,
   type ReturnRequest,
 } from "@/lib/admin-data";
-import { useToast } from "@/components/admin/toast";
+import { useToast } from "@/components/admin/shared/toast";
 
 import type { LogAuditFn } from "./use-audit-log";
 
@@ -15,15 +15,33 @@ export function useReturns({
   orders,
   markOrderRefunded,
   logAudit,
+  initialQuery = "",
+  initialStatusFilter = "All",
+  setUrlQuery,
+  setUrlStatusFilter,
 }: {
   orders: Order[];
   markOrderRefunded: (orderId: string) => void;
   logAudit: LogAuditFn;
+  initialQuery?: string;
+  initialStatusFilter?: string;
+  setUrlQuery?: (query: string) => void;
+  setUrlStatusFilter?: (status: string) => void;
 }) {
   const { toast } = useToast();
   const [list, setList] = useState<ReturnRequest[]>(initialReturnRequests);
-  const [query, setQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState("All");
+  const [query, setQueryState] = useState(initialQuery);
+  const [statusFilter, setStatusFilterState] = useState(initialStatusFilter);
+
+  function setQuery(query: string) {
+    setQueryState(query);
+    setUrlQuery?.(query);
+  }
+
+  function setStatusFilter(status: string) {
+    setStatusFilterState(status);
+    setUrlStatusFilter?.(status);
+  }
 
   function approve(id: string) {
     const target = list.find((entry) => entry.id === id);

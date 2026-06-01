@@ -6,8 +6,8 @@ import {
   initialDiscountCodes,
   type DiscountCode,
 } from "@/lib/admin-data";
-import type { DiscountFormState } from "@/components/admin/discount-dialog";
-import { useToast } from "@/components/admin/toast";
+import type { DiscountFormState } from "@/components/admin/dialogs/discount-dialog";
+import { useToast } from "@/components/admin/shared/toast";
 
 import type { LogAuditFn } from "./use-audit-log";
 

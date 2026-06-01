@@ -7,11 +7,11 @@ import {
   type Category,
   type Product,
 } from "@/lib/admin-data";
-import { emptyProductForm } from "@/components/admin/constants";
-import type { InventoryAdjustmentReason } from "@/components/admin/inventory-dialog";
-import { useToast } from "@/components/admin/toast";
-import type { ProductForm } from "@/components/admin/types";
-import type { useRecents } from "@/components/admin/recents";
+import { emptyProductForm } from "@/components/admin/shared/constants";
+import type { InventoryAdjustmentReason } from "@/components/admin/dialogs/inventory-dialog";
+import { useToast } from "@/components/admin/shared/toast";
+import type { ProductForm } from "@/components/admin/shared/types";
+import type { useRecents } from "@/components/admin/shared/recents";
 
 import type { LogAuditFn } from "./use-audit-log";
 

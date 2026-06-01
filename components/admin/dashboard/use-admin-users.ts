@@ -8,8 +8,8 @@ import {
   type AdminRole,
   type AdminUserStatus,
 } from "@/lib/admin-data";
-import { emptyInvitationForm } from "@/components/admin/constants";
-import type { InvitationForm } from "@/components/admin/types";
+import { emptyInvitationForm } from "@/components/admin/shared/constants";
+import type { InvitationForm } from "@/components/admin/shared/types";
 
 export function useAdminUsers({ userEmail }: { userEmail?: string }) {
   const [users, setUsers] = useState(initialAdminUsers);

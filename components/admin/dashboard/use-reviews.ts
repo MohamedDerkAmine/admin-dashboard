@@ -3,14 +3,43 @@
 import { useState } from "react";
 
 import { initialReviews, type Review } from "@/lib/admin-data";
-import { useToast } from "@/components/admin/toast";
+import { useToast } from "@/components/admin/shared/toast";
 
-export function useReviews() {
+export function useReviews({
+  initialQuery = "",
+  initialStatusFilter = "All",
+  initialRatingFilter = "All",
+  setUrlQuery,
+  setUrlStatusFilter,
+  setUrlRatingFilter,
+}: {
+  initialQuery?: string;
+  initialStatusFilter?: string;
+  initialRatingFilter?: string;
+  setUrlQuery?: (query: string) => void;
+  setUrlStatusFilter?: (status: string) => void;
+  setUrlRatingFilter?: (rating: string) => void;
+} = {}) {
   const { toast } = useToast();
   const [list, setList] = useState<Review[]>(initialReviews);
-  const [query, setQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState("All");
-  const [ratingFilter, setRatingFilter] = useState("All");
+  const [query, setQueryState] = useState(initialQuery);
+  const [statusFilter, setStatusFilterState] = useState(initialStatusFilter);
+  const [ratingFilter, setRatingFilterState] = useState(initialRatingFilter);
+
+  function setQuery(query: string) {
+    setQueryState(query);
+    setUrlQuery?.(query);
+  }
+
+  function setStatusFilter(status: string) {
+    setStatusFilterState(status);
+    setUrlStatusFilter?.(status);
+  }
+
+  function setRatingFilter(rating: string) {
+    setRatingFilterState(rating);
+    setUrlRatingFilter?.(rating);
+  }
 
   function setStatus(id: string, status: Review["status"]) {
     const target = list.find((entry) => entry.id === id);

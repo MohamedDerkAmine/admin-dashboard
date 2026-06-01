@@ -1,7 +1,7 @@
 import { BoxesIcon, CommandIcon, KeyboardIcon, ZapIcon } from "lucide-react";
 
 import { LoginForm } from "@/components/auth/login-form";
-import { Kbd } from "@/components/admin/kbd";
+import { Kbd } from "@/components/admin/shared/kbd";
 
 export default function LoginPage() {
   return (

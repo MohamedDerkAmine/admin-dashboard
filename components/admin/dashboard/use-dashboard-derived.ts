@@ -7,7 +7,7 @@ import type {
   Order,
   Product,
 } from "@/lib/admin-data";
-import { filterByQuery, paginate } from "@/components/admin/utils";
+import { filterByQuery, paginate } from "@/components/admin/shared/utils";
 
 export function useDashboardDerived({
   products,

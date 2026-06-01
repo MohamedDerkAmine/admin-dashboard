@@ -7,15 +7,15 @@ import type {
   Product,
   ReturnRequest,
 } from "@/lib/admin-data";
-import { DensityToggle } from "@/components/admin/density-toggle";
-import { Kbd } from "@/components/admin/kbd";
-import { MobileNav } from "@/components/admin/mobile-nav";
+import { DensityToggle } from "@/components/admin/navigation/density-toggle";
+import { Kbd } from "@/components/admin/shared/kbd";
+import { MobileNav } from "@/components/admin/navigation/mobile-nav";
 import {
   NotificationsButton,
   buildNotifications,
-} from "@/components/admin/notifications";
-import { ThemeToggle } from "@/components/admin/theme-toggle";
-import type { Section } from "@/components/admin/types";
+} from "@/components/admin/navigation/notifications";
+import { ThemeToggle } from "@/components/admin/navigation/theme-toggle";
+import type { Section } from "@/components/admin/shared/types";
 import { Button } from "@/components/ui/button";
 
 export function DashboardHeader({
@@ -39,7 +39,7 @@ export function DashboardHeader({
 }) {
   return (
     <header className="sticky top-0 z-20 flex h-12 items-center gap-3 border-b border-border/60 bg-background/85 px-3 backdrop-blur-md md:px-4">
-      <MobileNav section={section} setSection={switchSection} />
+      <MobileNav section={section} />
 
       <div className="flex min-w-0 flex-1 items-center gap-1.5 text-sm">
         <span className="text-muted-foreground">StoreOps</span>
