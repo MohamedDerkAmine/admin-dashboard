@@ -1,52 +1,21 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useActionState, useState } from "react";
 import { Loader2Icon, TriangleAlertIcon } from "lucide-react";
 
+import { authenticate } from "@/app/auth/login/actions";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { createClient } from "@/lib/client";
 
 export function LoginForm() {
-  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [mode, setMode] = useState<"signin" | "signup">("signin");
-  const [message, setMessage] = useState("");
-  const [isPending, setIsPending] = useState(false);
-
-  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setIsPending(true);
-    setMessage("");
-
-    try {
-      const supabase = createClient();
-      const { error } =
-        mode === "signin"
-          ? await supabase.auth.signInWithPassword({ email, password })
-          : await supabase.auth.signUp({ email, password });
-
-      if (error) {
-        setMessage(error.message);
-        setIsPending(false);
-        return;
-      }
-
-      router.refresh();
-      router.push("/");
-    } catch (error) {
-      setMessage(
-        error instanceof Error
-          ? error.message
-          : "Unable to authenticate. Please try again.",
-      );
-      setIsPending(false);
-    }
-  }
+  const [state, formAction, isPending] = useActionState(authenticate, {
+    message: "",
+  });
 
   return (
     <Card className="w-full gap-0 py-0">
@@ -60,13 +29,15 @@ export function LoginForm() {
             : "We'll create a Supabase account and sign you in."}
         </p>
       </div>
-      <form className="grid gap-3 p-5" onSubmit={handleSubmit}>
+      <form className="grid gap-3 p-5" action={formAction}>
+        <input type="hidden" name="mode" value={mode} />
         <div className="grid gap-1.5">
           <Label htmlFor="email" className="text-xs text-muted-foreground">
             Email
           </Label>
           <Input
             id="email"
+            name="email"
             autoComplete="email"
             onChange={(event) => setEmail(event.target.value)}
             placeholder="admin@example.com"
@@ -94,6 +65,7 @@ export function LoginForm() {
           </div>
           <Input
             id="password"
+            name="password"
             autoComplete={
               mode === "signin" ? "current-password" : "new-password"
             }
@@ -104,10 +76,10 @@ export function LoginForm() {
             value={password}
           />
         </div>
-        {message ? (
+        {state.message ? (
           <div className="flex items-start gap-2 rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-xs text-destructive">
             <TriangleAlertIcon className="mt-0.5 size-3.5 shrink-0" />
-            <span>{message}</span>
+            <span>{state.message}</span>
           </div>
         ) : null}
         <Button
