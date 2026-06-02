@@ -3,10 +3,10 @@
 import { useState } from "react";
 
 import { initialCategories } from "@/lib/admin-data";
-import { emptyCategoryForm } from "@/components/admin/constants";
-import { useToast } from "@/components/admin/toast";
-import type { CategoryForm } from "@/components/admin/types";
-import type { useRecents } from "@/components/admin/recents";
+import { emptyCategoryForm } from "@/components/admin/shared/constants";
+import { useToast } from "@/components/admin/shared/toast";
+import type { CategoryForm } from "@/components/admin/shared/types";
+import type { useRecents } from "@/components/admin/shared/recents";
 
 import type { LogAuditFn } from "./use-audit-log";
 

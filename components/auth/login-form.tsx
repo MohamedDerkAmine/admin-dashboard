@@ -8,11 +8,9 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { createClient } from "@/lib/client";
 
 export function LoginForm() {
   const router = useRouter();
-  const supabase = createClient();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [mode, setMode] = useState<"signin" | "signup">("signin");
@@ -24,15 +22,26 @@ export function LoginForm() {
     setIsPending(true);
     setMessage("");
 
-    const action =
-      mode === "signin"
-        ? supabase.auth.signInWithPassword({ email, password })
-        : supabase.auth.signUp({ email, password });
+    const response = await fetch("/api/auth", {
+      body: JSON.stringify({ email, mode, password }),
+      headers: { "Content-Type": "application/json" },
+      method: "POST",
+    }).catch(() => null);
 
-    const { error } = await action;
+    if (!response) {
+      setMessage("Unable to reach the auth server. Please try again.");
+      setIsPending(false);
+      return;
+    }
 
-    if (error) {
-      setMessage(error.message);
+    const result = await response.json().catch(() => ({}));
+
+    if (!response.ok) {
+      setMessage(
+        typeof result.message === "string"
+          ? result.message
+          : "Unable to authenticate. Please try again.",
+      );
       setIsPending(false);
       return;
     }
@@ -60,6 +69,7 @@ export function LoginForm() {
           </Label>
           <Input
             id="email"
+            name="email"
             autoComplete="email"
             onChange={(event) => setEmail(event.target.value)}
             placeholder="admin@example.com"
@@ -87,6 +97,7 @@ export function LoginForm() {
           </div>
           <Input
             id="password"
+            name="password"
             autoComplete={
               mode === "signin" ? "current-password" : "new-password"
             }

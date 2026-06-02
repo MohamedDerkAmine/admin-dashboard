@@ -2,8 +2,8 @@
 
 import { useEffect } from "react";
 
-import { navItems } from "@/components/admin/constants";
-import type { Section } from "@/components/admin/types";
+import { navItems } from "@/components/admin/shared/constants";
+import type { Section } from "@/components/admin/shared/types";
 
 export function useGlobalHotkeys({
   paletteOpen,
