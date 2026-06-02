@@ -1,0 +1,9 @@
+# Triage Labels
+
+Use these canonical labels:
+
+- `needs-triage`: maintainer needs to evaluate.
+- `needs-info`: waiting on reporter.
+- `ready-for-agent`: fully specified and ready for an AFK agent.
+- `ready-for-human`: needs human implementation or review.
+- `wontfix`: will not be actioned.

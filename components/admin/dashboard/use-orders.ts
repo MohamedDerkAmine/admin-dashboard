@@ -7,10 +7,10 @@ import {
   type Order,
   type OrderStatus,
 } from "@/lib/admin-data";
-import { emptyOrderForm } from "@/components/admin/constants";
-import { useToast } from "@/components/admin/toast";
-import type { OrderForm } from "@/components/admin/types";
-import type { useRecents } from "@/components/admin/recents";
+import { emptyOrderForm } from "@/components/admin/shared/constants";
+import { useToast } from "@/components/admin/shared/toast";
+import type { OrderForm } from "@/components/admin/shared/types";
+import type { useRecents } from "@/components/admin/shared/recents";
 
 import type { LogAuditFn } from "./use-audit-log";
 

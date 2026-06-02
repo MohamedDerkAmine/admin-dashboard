@@ -16,21 +16,21 @@ import type {
   Review,
   ScheduledReport,
 } from "@/lib/admin-data";
-import { AnalyticsSection } from "@/components/admin/analytics-section";
-import { AuditLogSection } from "@/components/admin/audit-log-section";
-import { CategoriesSection } from "@/components/admin/categories-section";
-import { CustomersSection } from "@/components/admin/customers-section";
-import { DashboardSection } from "@/components/admin/dashboard-section";
-import { DiscountsSection } from "@/components/admin/discounts-section";
-import { EmailTemplatesSection } from "@/components/admin/email-templates-section";
-import { OrdersSection } from "@/components/admin/orders-section";
-import { ProductsSection } from "@/components/admin/products-section";
-import { ReportsSection } from "@/components/admin/reports-section";
-import { ReturnsSection } from "@/components/admin/returns-section";
-import { ReviewsSection } from "@/components/admin/reviews-section";
-import { SettingsSection } from "@/components/admin/settings-section";
-import { UsersSection } from "@/components/admin/users-section";
-import type { InvitationForm, Section } from "@/components/admin/types";
+import { AnalyticsSection } from "@/components/admin/sections/analytics-section";
+import { AuditLogSection } from "@/components/admin/sections/audit-log-section";
+import { CategoriesSection } from "@/components/admin/sections/categories-section";
+import { CustomersSection } from "@/components/admin/sections/customers-section";
+import { DashboardSection } from "@/components/admin/sections/dashboard-section";
+import { DiscountsSection } from "@/components/admin/sections/discounts-section";
+import { EmailTemplatesSection } from "@/components/admin/sections/email-templates-section";
+import { OrdersSection } from "@/components/admin/sections/orders-section";
+import { ProductsSection } from "@/components/admin/sections/products-section";
+import { ReportsSection } from "@/components/admin/sections/reports-section";
+import { ReturnsSection } from "@/components/admin/sections/returns-section";
+import { ReviewsSection } from "@/components/admin/sections/reviews-section";
+import { SettingsSection } from "@/components/admin/sections/settings-section";
+import { UsersSection } from "@/components/admin/sections/users-section";
+import type { InvitationForm, Section } from "@/components/admin/shared/types";
 
 type PaginatedView<T> = {
   items: T[];
@@ -38,9 +38,7 @@ type PaginatedView<T> = {
   totalPages: number;
 };
 
-export function DashboardSectionRouter(props: {
-  section: Section;
-  // dashboard
+type DashboardMetrics = {
   activeProducts: number;
   lowStock: number;
   pendingOrders: number;
@@ -48,305 +46,291 @@ export function DashboardSectionRouter(props: {
   currentRole: AdminRole;
   usersCount: number;
   invitationsCount: number;
-  switchSection: (section: Section) => void;
-  // shared lists
+};
+
+type DashboardDatasets = {
   products: Product[];
   orders: Order[];
   customers: Customer[];
-  // filter state
+  categories: Category[];
+  discounts: DiscountCode[];
+  returns: ReturnRequest[];
+  reviews: Review[];
+  auditEvents: AuditEvent[];
+  scheduledReports: ScheduledReport[];
+  invitations: Invitation[];
+  users: AdminUser[];
+};
+
+type SharedFilters = {
   query: string;
   setQuery: (query: string) => void;
   statusFilter: string;
   setStatusFilter: (value: string) => void;
   categoryFilter: string;
   setCategoryFilter: (value: string) => void;
-  page: number;
   setPage: (page: number) => void;
-  // analytics
-  // products
-  productPage: PaginatedView<Product>;
-  filteredProductsCount: number;
-  categories: Category[];
-  bulkDeleteProducts: (ids: string[]) => void;
-  bulkUpdateProductStatus: (ids: string[], status: Product["status"]) => void;
-  deleteProduct: (productId: string) => void;
-  openEditProduct: (product: Product) => void;
+};
+
+type ProductSectionState = {
+  page: PaginatedView<Product>;
+  filteredCount: number;
+};
+
+type OrderSectionState = {
+  page: PaginatedView<Order>;
+  filteredCount: number;
+};
+
+type CustomerSectionState = {
+  page: PaginatedView<Customer>;
+  filteredCount: number;
+};
+
+type ProductActions = {
+  bulkDelete: (ids: string[]) => void;
+  bulkUpdateStatus: (ids: string[], status: Product["status"]) => void;
+  remove: (productId: string) => void;
+  openEdit: (product: Product) => void;
   openInventoryAdjustment: (productId: string) => void;
-  openNewProduct: () => void;
-  // categories
-  deleteCategory: (categoryId: string) => void;
-  openNewCategory: () => void;
-  // discounts
-  discounts: DiscountCode[];
-  openNewDiscount: () => void;
-  deleteDiscount: (id: string) => void;
-  // orders
-  orderPage: PaginatedView<Order>;
-  filteredOrdersCount: number;
-  bulkUpdateOrderStatus: (ids: string[], status: OrderStatus) => void;
-  openNewOrder: () => void;
+  openNew: () => void;
+};
+
+type CategoryActions = {
+  remove: (categoryId: string) => void;
+  openNew: () => void;
+};
+
+type DiscountActions = {
+  openNew: () => void;
+  remove: (id: string) => void;
+};
+
+type OrderActions = {
+  bulkUpdateStatus: (ids: string[], status: OrderStatus) => void;
+  openNew: () => void;
   openRefund: (orderId: string) => void;
-  updateOrderStatus: (orderId: string, status: OrderStatus) => void;
-  // returns
-  returns: ReturnRequest[];
-  returnsQuery: string;
-  setReturnsQuery: (query: string) => void;
-  returnsStatusFilter: string;
-  setReturnsStatusFilter: (value: string) => void;
-  approveReturn: (id: string) => void;
-  denyReturn: (id: string) => void;
-  refundReturn: (id: string) => void;
-  // reviews
-  reviews: Review[];
-  reviewsQuery: string;
-  setReviewsQuery: (query: string) => void;
-  reviewsStatusFilter: string;
-  setReviewsStatusFilter: (value: string) => void;
-  reviewsRatingFilter: string;
-  setReviewsRatingFilter: (value: string) => void;
-  setReviewStatus: (id: string, status: Review["status"]) => void;
-  // customers
-  customerPage: PaginatedView<Customer>;
-  filteredCustomersCount: number;
-  // audit
-  auditEvents: AuditEvent[];
-  // reports
-  scheduledReports: ScheduledReport[];
-  openNewReport: () => void;
-  toggleScheduledReport: (id: string) => void;
-  runScheduledReport: (id: string) => void;
-  deleteScheduledReport: (id: string) => void;
-  // users
-  canManageUsers: boolean;
+  updateStatus: (orderId: string, status: OrderStatus) => void;
+};
+
+type ReturnControls = {
+  query: string;
+  setQuery: (query: string) => void;
+  statusFilter: string;
+  setStatusFilter: (value: string) => void;
+  approve: (id: string) => void;
+  deny: (id: string) => void;
+  refund: (id: string) => void;
+};
+
+type ReviewControls = {
+  query: string;
+  setQuery: (query: string) => void;
+  statusFilter: string;
+  setStatusFilter: (value: string) => void;
+  ratingFilter: string;
+  setRatingFilter: (value: string) => void;
+  setStatus: (id: string, status: Review["status"]) => void;
+};
+
+type ReportActions = {
+  openNew: () => void;
+  toggle: (id: string) => void;
+  run: (id: string) => void;
+  remove: (id: string) => void;
+};
+
+type UserControls = {
+  canManage: boolean;
   invitationForm: InvitationForm;
-  invitations: Invitation[];
-  inviteUser: () => void;
+  invite: () => void;
   removeInvitation: (id: string) => void;
   setInvitationForm: (form: InvitationForm) => void;
-  updateUserRole: (userId: string, role: AdminRole) => void;
-  updateUserStatus: (userId: string, status: AdminUserStatus) => void;
-  users: AdminUser[];
-}) {
-  const {
-    section,
-    activeProducts,
-    lowStock,
-    pendingOrders,
-    revenue,
-    currentRole,
-    usersCount,
-    invitationsCount,
-    switchSection,
-    products,
-    orders,
-    customers,
-    query,
-    setQuery,
-    statusFilter,
-    setStatusFilter,
-    categoryFilter,
-    setCategoryFilter,
-    page,
-    setPage,
-    productPage,
-    filteredProductsCount,
-    categories,
-    bulkDeleteProducts,
-    bulkUpdateProductStatus,
-    deleteProduct,
-    openEditProduct,
-    openInventoryAdjustment,
-    openNewProduct,
-    deleteCategory,
-    openNewCategory,
-    discounts,
-    openNewDiscount,
-    deleteDiscount,
-    orderPage,
-    filteredOrdersCount,
-    bulkUpdateOrderStatus,
-    openNewOrder,
-    openRefund,
-    updateOrderStatus,
-    returns,
-    returnsQuery,
-    setReturnsQuery,
-    returnsStatusFilter,
-    setReturnsStatusFilter,
-    approveReturn,
-    denyReturn,
-    refundReturn,
-    reviews,
-    reviewsQuery,
-    setReviewsQuery,
-    reviewsStatusFilter,
-    setReviewsStatusFilter,
-    reviewsRatingFilter,
-    setReviewsRatingFilter,
-    setReviewStatus,
-    customerPage,
-    filteredCustomersCount,
-    auditEvents,
-    scheduledReports,
-    openNewReport,
-    toggleScheduledReport,
-    runScheduledReport,
-    deleteScheduledReport,
-    canManageUsers,
-    invitationForm,
-    invitations,
-    inviteUser,
-    removeInvitation,
-    setInvitationForm,
-    updateUserRole,
-    updateUserStatus,
-    users,
-  } = props;
+  updateRole: (userId: string, role: AdminRole) => void;
+  updateStatus: (userId: string, status: AdminUserStatus) => void;
+};
 
+export function DashboardSectionRouter({
+  section,
+  switchSection,
+  metrics,
+  datasets,
+  filters,
+  productsView,
+  productActions,
+  categoryActions,
+  discountActions,
+  ordersView,
+  orderActions,
+  returnsControls,
+  reviewsControls,
+  customersView,
+  reportActions,
+  userControls,
+}: {
+  section: Section;
+  switchSection: (section: Section) => void;
+  metrics: DashboardMetrics;
+  datasets: DashboardDatasets;
+  filters: SharedFilters;
+  productsView: ProductSectionState;
+  productActions: ProductActions;
+  categoryActions: CategoryActions;
+  discountActions: DiscountActions;
+  ordersView: OrderSectionState;
+  orderActions: OrderActions;
+  returnsControls: ReturnControls;
+  reviewsControls: ReviewControls;
+  customersView: CustomerSectionState;
+  reportActions: ReportActions;
+  userControls: UserControls;
+}) {
   return (
     <>
       {section === "dashboard" ? (
         <DashboardSection
-          activeProducts={activeProducts}
-          lowStock={lowStock}
-          orders={orders}
-          pendingOrders={pendingOrders}
-          products={products}
-          revenue={revenue}
-          currentRole={currentRole}
-          usersCount={usersCount}
-          invitationsCount={invitationsCount}
+          activeProducts={metrics.activeProducts}
+          lowStock={metrics.lowStock}
+          orders={datasets.orders}
+          pendingOrders={metrics.pendingOrders}
+          products={datasets.products}
+          revenue={metrics.revenue}
+          currentRole={metrics.currentRole}
+          usersCount={metrics.usersCount}
+          invitationsCount={metrics.invitationsCount}
           setSection={switchSection}
         />
       ) : null}
       {section === "analytics" ? (
         <AnalyticsSection
-          orders={orders}
-          products={products}
-          customers={customers}
+          orders={datasets.orders}
+          products={datasets.products}
+          customers={datasets.customers}
         />
       ) : null}
       {section === "products" ? (
         <ProductsSection
-          bulkDeleteProducts={bulkDeleteProducts}
-          bulkUpdateProductStatus={bulkUpdateProductStatus}
-          categories={categories}
-          categoryFilter={categoryFilter}
-          deleteProduct={deleteProduct}
-          openEditProduct={openEditProduct}
-          openInventoryAdjustment={openInventoryAdjustment}
-          openNewProduct={openNewProduct}
-          page={productPage.page}
-          products={productPage.items}
-          query={query}
-          setCategoryFilter={setCategoryFilter}
-          setPage={setPage}
-          setQuery={setQuery}
-          setStatusFilter={setStatusFilter}
-          statusFilter={statusFilter}
-          totalPages={productPage.totalPages}
-          totalCount={filteredProductsCount}
+          bulkDeleteProducts={productActions.bulkDelete}
+          bulkUpdateProductStatus={productActions.bulkUpdateStatus}
+          categories={datasets.categories}
+          categoryFilter={filters.categoryFilter}
+          deleteProduct={productActions.remove}
+          openEditProduct={productActions.openEdit}
+          openInventoryAdjustment={productActions.openInventoryAdjustment}
+          openNewProduct={productActions.openNew}
+          page={productsView.page.page}
+          products={productsView.page.items}
+          query={filters.query}
+          setCategoryFilter={filters.setCategoryFilter}
+          setPage={filters.setPage}
+          setQuery={filters.setQuery}
+          setStatusFilter={filters.setStatusFilter}
+          statusFilter={filters.statusFilter}
+          totalPages={productsView.page.totalPages}
+          totalCount={productsView.filteredCount}
         />
       ) : null}
       {section === "categories" ? (
         <CategoriesSection
-          categories={categories}
-          deleteCategory={deleteCategory}
-          openNewCategory={openNewCategory}
+          categories={datasets.categories}
+          deleteCategory={categoryActions.remove}
+          openNewCategory={categoryActions.openNew}
         />
       ) : null}
       {section === "discounts" ? (
         <DiscountsSection
-          discounts={discounts}
-          openNewDiscount={openNewDiscount}
-          deleteDiscount={deleteDiscount}
+          discounts={datasets.discounts}
+          openNewDiscount={discountActions.openNew}
+          deleteDiscount={discountActions.remove}
         />
       ) : null}
       {section === "orders" ? (
         <OrdersSection
-          bulkUpdateOrderStatus={bulkUpdateOrderStatus}
-          openNewOrder={openNewOrder}
-          openRefund={openRefund}
-          orders={orderPage.items}
-          page={orderPage.page}
-          query={query}
-          setPage={setPage}
-          setQuery={setQuery}
-          setStatusFilter={setStatusFilter}
-          statusFilter={statusFilter}
-          totalPages={orderPage.totalPages}
-          totalCount={filteredOrdersCount}
-          updateOrderStatus={updateOrderStatus}
+          bulkUpdateOrderStatus={orderActions.bulkUpdateStatus}
+          openNewOrder={orderActions.openNew}
+          openRefund={orderActions.openRefund}
+          orders={ordersView.page.items}
+          page={ordersView.page.page}
+          query={filters.query}
+          setPage={filters.setPage}
+          setQuery={filters.setQuery}
+          setStatusFilter={filters.setStatusFilter}
+          statusFilter={filters.statusFilter}
+          totalPages={ordersView.page.totalPages}
+          totalCount={ordersView.filteredCount}
+          updateOrderStatus={orderActions.updateStatus}
         />
       ) : null}
       {section === "returns" ? (
         <ReturnsSection
-          returns={returns}
-          query={returnsQuery}
-          setQuery={setReturnsQuery}
-          statusFilter={returnsStatusFilter}
-          setStatusFilter={setReturnsStatusFilter}
-          onApprove={approveReturn}
-          onDeny={denyReturn}
-          onRefund={refundReturn}
+          returns={datasets.returns}
+          query={returnsControls.query}
+          setQuery={returnsControls.setQuery}
+          statusFilter={returnsControls.statusFilter}
+          setStatusFilter={returnsControls.setStatusFilter}
+          onApprove={returnsControls.approve}
+          onDeny={returnsControls.deny}
+          onRefund={returnsControls.refund}
         />
       ) : null}
       {section === "reviews" ? (
         <ReviewsSection
-          reviews={reviews}
-          query={reviewsQuery}
-          setQuery={setReviewsQuery}
-          statusFilter={reviewsStatusFilter}
-          setStatusFilter={setReviewsStatusFilter}
-          ratingFilter={reviewsRatingFilter}
-          setRatingFilter={setReviewsRatingFilter}
-          onApprove={(id) => setReviewStatus(id, "Approved")}
-          onFlag={(id) => setReviewStatus(id, "Flagged")}
-          onReject={(id) => setReviewStatus(id, "Rejected")}
+          reviews={datasets.reviews}
+          query={reviewsControls.query}
+          setQuery={reviewsControls.setQuery}
+          statusFilter={reviewsControls.statusFilter}
+          setStatusFilter={reviewsControls.setStatusFilter}
+          ratingFilter={reviewsControls.ratingFilter}
+          setRatingFilter={reviewsControls.setRatingFilter}
+          onApprove={(id) => reviewsControls.setStatus(id, "Approved")}
+          onFlag={(id) => reviewsControls.setStatus(id, "Flagged")}
+          onReject={(id) => reviewsControls.setStatus(id, "Rejected")}
         />
       ) : null}
       {section === "customers" ? (
         <CustomersSection
-          customers={customerPage.items}
-          page={customerPage.page}
-          query={query}
-          setPage={setPage}
-          setQuery={setQuery}
-          totalPages={customerPage.totalPages}
-          totalCount={filteredCustomersCount}
+          customers={customersView.page.items}
+          page={customersView.page.page}
+          query={filters.query}
+          setPage={filters.setPage}
+          setQuery={filters.setQuery}
+          totalPages={customersView.page.totalPages}
+          totalCount={customersView.filteredCount}
         />
       ) : null}
-      {section === "audit" ? <AuditLogSection events={auditEvents} /> : null}
+      {section === "audit" ? (
+        <AuditLogSection events={datasets.auditEvents} />
+      ) : null}
       {section === "reports" ? (
         <ReportsSection
-          reports={scheduledReports}
-          openNewReport={openNewReport}
-          onToggle={toggleScheduledReport}
-          onRunNow={runScheduledReport}
-          onDelete={deleteScheduledReport}
+          reports={datasets.scheduledReports}
+          openNewReport={reportActions.openNew}
+          onToggle={reportActions.toggle}
+          onRunNow={reportActions.run}
+          onDelete={reportActions.remove}
         />
       ) : null}
       {section === "emails" ? (
         <EmailTemplatesSection
-          customers={customers}
-          orders={orders}
-          products={products}
+          customers={datasets.customers}
+          orders={datasets.orders}
+          products={datasets.products}
           storeName="StoreOps"
         />
       ) : null}
       {section === "settings" ? <SettingsSection /> : null}
       {section === "users" ? (
         <UsersSection
-          canManageUsers={canManageUsers}
-          currentRole={currentRole}
-          invitationForm={invitationForm}
-          invitations={invitations}
-          inviteUser={inviteUser}
-          removeInvitation={removeInvitation}
-          setInvitationForm={setInvitationForm}
-          updateUserRole={updateUserRole}
-          updateUserStatus={updateUserStatus}
-          users={users}
+          canManageUsers={userControls.canManage}
+          currentRole={metrics.currentRole}
+          invitationForm={userControls.invitationForm}
+          invitations={datasets.invitations}
+          inviteUser={userControls.invite}
+          removeInvitation={userControls.removeInvitation}
+          setInvitationForm={userControls.setInvitationForm}
+          updateUserRole={userControls.updateRole}
+          updateUserStatus={userControls.updateStatus}
+          users={datasets.users}
         />
       ) : null}
     </>

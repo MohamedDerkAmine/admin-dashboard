@@ -11,9 +11,9 @@ import {
   type Review,
   type ScheduledReport,
 } from "@/lib/admin-data";
-import { exportCsv } from "@/components/admin/csv";
-import type { ReportFormState } from "@/components/admin/report-dialog";
-import { useToast } from "@/components/admin/toast";
+import { exportCsv } from "@/components/admin/shared/csv";
+import type { ReportFormState } from "@/components/admin/dialogs/report-dialog";
+import { useToast } from "@/components/admin/shared/toast";
 
 import type { LogAuditFn } from "./use-audit-log";
 
