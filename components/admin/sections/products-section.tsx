@@ -1,7 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { DownloadIcon, FilterXIcon, PackageIcon, PlusIcon } from "lucide-react";
+import {
+  DownloadIcon,
+  FilterXIcon,
+  PackageIcon,
+  PlusIcon,
+  SparklesIcon,
+} from "lucide-react";
 
 import type { Category, Product } from "@/lib/admin-data";
 import {
@@ -22,7 +28,7 @@ import { StatusDot } from "@/components/admin/shared/status-dot";
 import { FilterSelect, Toolbar } from "@/components/admin/shared/toolbar";
 import { useSelection } from "@/components/admin/shared/use-selection";
 import { formatCurrency } from "@/components/admin/shared/utils";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import {
   Select,
@@ -133,6 +139,13 @@ export function ProductsSection({
             <DownloadIcon className="size-4" />
             Export
           </Button>
+          <Link
+            href="/dashboard/products/new"
+            className={cn(buttonVariants({ size: "sm", variant: "outline" }))}
+          >
+            <SparklesIcon className="size-4" />
+            Create with AI
+          </Link>
           <Button size="sm" onClick={openNewProduct}>
             <PlusIcon className="size-4" />
             Add product
@@ -224,9 +237,11 @@ export function ProductsSection({
               title="No products yet"
               description="Start your catalog by adding your first product."
               action={{
-                label: "Add product",
-                onClick: openNewProduct,
-                icon: PlusIcon,
+                label: "Create with AI",
+                onClick: () => {
+                  window.location.href = "/dashboard/products/new";
+                },
+                icon: SparklesIcon,
               }}
             />
           )
