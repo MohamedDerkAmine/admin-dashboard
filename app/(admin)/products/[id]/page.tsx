@@ -1,8 +1,8 @@
 import { notFound } from "next/navigation";
 
-import { initialAuditEvents, initialProducts } from "@/lib/admin-data";
 import { ProductDetail } from "@/components/admin/details/product-detail";
-import { createClient } from "@/lib/server";
+import { requireTenantSession } from "@/lib/auth/dal";
+import { getTenantAdminData } from "@/lib/db/admin-store";
 
 export default async function ProductDetailPage({
   params,
@@ -10,26 +10,23 @@ export default async function ProductDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const product = initialProducts.find((entry) => entry.id === id);
+  const session = await requireTenantSession();
+  const data = getTenantAdminData(session.tenant.id);
+  const product = data.products.find((entry) => entry.id === id);
 
   if (!product) {
     notFound();
   }
 
-  const activity = initialAuditEvents.filter(
+  const activity = data.auditEvents.filter(
     (event) => event.target === product.name,
   );
-
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
 
   return (
     <ProductDetail
       product={product}
       activity={activity}
-      userEmail={user?.email ?? "you"}
+      userEmail={session.user.email}
     />
   );
 }

@@ -37,8 +37,8 @@ const iconForKind: Record<Notification["kind"], LucideIcon> = {
 };
 
 const toneClassForKind: Record<Notification["kind"], string> = {
-  low_stock: "bg-[oklch(0.82_0.15_80/15%)] text-[var(--warning)]",
-  pending_order: "bg-[oklch(0.78_0.13_230/15%)] text-[var(--info)]",
+  low_stock: "bg-[color-mix(in_oklch,var(--warning),transparent_85%)] text-[var(--warning)]",
+  pending_order: "bg-[color-mix(in_oklch,var(--info),transparent_85%)] text-[var(--info)]",
   return_request: "bg-destructive/15 text-destructive",
 };
 

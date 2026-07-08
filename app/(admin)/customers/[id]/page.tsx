@@ -1,12 +1,8 @@
 import { notFound } from "next/navigation";
 
-import {
-  initialAuditEvents,
-  initialCustomers,
-  initialOrders,
-} from "@/lib/admin-data";
 import { CustomerDetail } from "@/components/admin/details/customer-detail";
-import { createClient } from "@/lib/server";
+import { requireTenantSession } from "@/lib/auth/dal";
+import { getTenantAdminData } from "@/lib/db/admin-store";
 
 export default async function CustomerDetailPage({
   params,
@@ -15,7 +11,9 @@ export default async function CustomerDetailPage({
 }) {
   const { id } = await params;
   const decoded = decodeURIComponent(id);
-  const customer = initialCustomers.find(
+  const session = await requireTenantSession();
+  const data = getTenantAdminData(session.tenant.id);
+  const customer = data.customers.find(
     (entry) =>
       entry.id === decoded ||
       entry.email.toLowerCase() === decoded.toLowerCase(),
@@ -25,22 +23,17 @@ export default async function CustomerDetailPage({
     notFound();
   }
 
-  const activity = initialAuditEvents.filter(
+  const activity = data.auditEvents.filter(
     (event) =>
       event.target === customer.email || event.target === customer.name,
   );
 
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
   return (
     <CustomerDetail
       customer={customer}
-      orders={initialOrders}
+      orders={data.orders}
       activity={activity}
-      userEmail={user?.email ?? "you"}
+      userEmail={session.user.email}
     />
   );
 }

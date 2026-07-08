@@ -15,6 +15,12 @@ import {
   type Product,
 } from "@/lib/admin-data";
 import { AreaChart } from "@/components/admin/shared/area-chart";
+import {
+  CohortRetentionHeatmap,
+  ConversionFunnel,
+  OrderFlowSankey,
+  SalesHeatmap,
+} from "@/components/admin/sections/analytics-viz";
 import { StatusDot, toneFor } from "@/components/admin/shared/status-dot";
 import { formatCurrency } from "@/components/admin/shared/utils";
 import { Card } from "@/components/ui/card";
@@ -262,6 +268,16 @@ export function AnalyticsSection({
             })}
           </div>
         </Card>
+      </div>
+
+      <div className="grid gap-3 xl:grid-cols-[1.2fr_1fr]">
+        <OrderFlowSankey orders={orders} />
+        <ConversionFunnel orders={orders} />
+      </div>
+
+      <div className="grid gap-3 xl:grid-cols-[1fr_1fr]">
+        <SalesHeatmap orders={orders} />
+        <CohortRetentionHeatmap customers={customers} />
       </div>
 
       <Card className="gap-0 py-0">

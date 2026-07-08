@@ -27,13 +27,15 @@ export type ReportDatasets = {
 
 export function useScheduledReports({
   datasets,
+  initialScheduledReports: initialList = initialScheduledReports,
   logAudit,
 }: {
   datasets: ReportDatasets;
+  initialScheduledReports?: ScheduledReport[];
   logAudit: LogAuditFn;
 }) {
   const { toast } = useToast();
-  const [list, setList] = useState<ScheduledReport[]>(initialScheduledReports);
+  const [list, setList] = useState<ScheduledReport[]>(initialList);
   const [dialogOpen, setDialogOpen] = useState(false);
 
   function save(form: ReportFormState) {

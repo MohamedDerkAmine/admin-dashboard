@@ -17,15 +17,17 @@ import type { LogAuditFn } from "./use-audit-log";
 
 export function useProducts({
   categories,
+  initialProducts: initialList = initialProducts,
   recents,
   logAudit,
 }: {
   categories: Category[];
+  initialProducts?: Product[];
   recents: ReturnType<typeof useRecents>;
   logAudit: LogAuditFn;
 }) {
   const { toast } = useToast();
-  const [list, setList] = useState(initialProducts);
+  const [list, setList] = useState(initialList);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState<ProductForm>(emptyProductForm);

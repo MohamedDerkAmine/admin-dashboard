@@ -11,9 +11,15 @@ import { useToast } from "@/components/admin/shared/toast";
 
 import type { LogAuditFn } from "./use-audit-log";
 
-export function useDiscounts({ logAudit }: { logAudit: LogAuditFn }) {
+export function useDiscounts({
+  initialDiscountCodes: initialList = initialDiscountCodes,
+  logAudit,
+}: {
+  initialDiscountCodes?: DiscountCode[];
+  logAudit: LogAuditFn;
+}) {
   const { toast } = useToast();
-  const [list, setList] = useState<DiscountCode[]>(initialDiscountCodes);
+  const [list, setList] = useState<DiscountCode[]>(initialList);
   const [dialogOpen, setDialogOpen] = useState(false);
 
   function openNew() {

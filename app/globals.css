@@ -51,87 +51,94 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
+/*
+ * Cloudscape-inspired theme (AWS Console look-alike).
+ * Palette approximates the AWS UI design tokens: cool navy foreground,
+ * off-white page background, action-blue primary, near-square corners.
+ * Reference colors (hex → oklch): #000716, #414d5c, #5f6b7a, #e9ebed,
+ * #f2f3f3, #fafafa, #006ce0, #0972d3, #037f0c, #8d6708, #d91515.
+ */
 :root {
-  --background: oklch(0.985 0.003 240);
-  --foreground: oklch(0.18 0.006 240);
-  --card: oklch(0.995 0.002 240);
-  --card-foreground: oklch(0.18 0.006 240);
+  --background: oklch(0.98 0.002 240);   /* #fafafa page */
+  --foreground: oklch(0.14 0.02 258);    /* #000716 near-black cool */
+  --card: oklch(1 0 0);                  /* pure white containers */
+  --card-foreground: oklch(0.14 0.02 258);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.18 0.006 240);
-  --primary: oklch(0.5 0.15 200);
-  --primary-foreground: oklch(0.99 0.004 240);
-  --secondary: oklch(0.96 0.004 240);
-  --secondary-foreground: oklch(0.22 0.006 240);
-  --muted: oklch(0.965 0.004 240);
-  --muted-foreground: oklch(0.48 0.012 240);
-  --accent: oklch(0.5 0.15 200);
-  --accent-foreground: oklch(0.99 0.004 240);
-  --success: oklch(0.55 0.16 152);
-  --warning: oklch(0.62 0.18 80);
-  --info: oklch(0.55 0.15 230);
-  --destructive: oklch(0.55 0.22 22);
-  --border: oklch(0 0 0 / 9%);
-  --input: oklch(0 0 0 / 12%);
-  --ring: oklch(0.5 0.15 200 / 50%);
-  --chart-1: oklch(0.55 0.15 200);
-  --chart-2: oklch(0.6 0.16 152);
-  --chart-3: oklch(0.7 0.16 80);
-  --chart-4: oklch(0.6 0.22 22);
-  --chart-5: oklch(0.55 0.16 285);
-  --chart-cyan: oklch(0.55 0.15 200);
-  --chart-lime: oklch(0.6 0.16 152);
-  --chart-amber: oklch(0.7 0.16 80);
-  --chart-rose: oklch(0.6 0.22 22);
-  --radius: 0.5rem;
-  --sidebar: oklch(0.985 0.002 240);
-  --sidebar-foreground: oklch(0.22 0.006 240);
-  --sidebar-primary: oklch(0.5 0.15 200);
-  --sidebar-primary-foreground: oklch(0.99 0.004 240);
-  --sidebar-accent: oklch(0.95 0.005 240);
-  --sidebar-accent-foreground: oklch(0.18 0.006 240);
-  --sidebar-border: oklch(0 0 0 / 7%);
-  --sidebar-ring: oklch(0.5 0.15 200 / 50%);
+  --popover-foreground: oklch(0.14 0.02 258);
+  --primary: oklch(0.55 0.19 254);       /* #006ce0 action blue */
+  --primary-foreground: oklch(1 0 0);
+  --secondary: oklch(0.96 0.003 240);    /* #f2f3f3 subtle surface */
+  --secondary-foreground: oklch(0.28 0.02 254); /* #414d5c body text */
+  --muted: oklch(0.96 0.003 240);        /* #f2f3f3 hover surface */
+  --muted-foreground: oklch(0.52 0.02 254); /* #5f6b7a secondary text */
+  --accent: oklch(0.55 0.19 254);
+  --accent-foreground: oklch(1 0 0);
+  --success: oklch(0.53 0.17 145);       /* #037f0c deep green */
+  --warning: oklch(0.55 0.12 70);        /* #8d6708 amber */
+  --info: oklch(0.55 0.18 254);          /* #0972d3 info blue */
+  --destructive: oklch(0.58 0.24 25);    /* #d91515 alert red */
+  --border: oklch(0.92 0.004 240);       /* #e9ebed divider */
+  --input: oklch(0.72 0.02 254);         /* #7d8998 input border — darker than divider */
+  --ring: oklch(0.55 0.19 254 / 45%);    /* focus ring */
+  --chart-1: oklch(0.55 0.19 254);       /* action blue */
+  --chart-2: oklch(0.53 0.17 145);       /* green */
+  --chart-3: oklch(0.55 0.12 70);        /* amber */
+  --chart-4: oklch(0.58 0.24 25);        /* red */
+  --chart-5: oklch(0.48 0.16 300);       /* purple */
+  --chart-cyan: oklch(0.55 0.18 220);
+  --chart-lime: oklch(0.55 0.17 145);
+  --chart-amber: oklch(0.62 0.14 70);
+  --chart-rose: oklch(0.58 0.24 25);
+  --radius: 0.25rem;                     /* 4px — Cloudscape near-square */
+  --sidebar: oklch(1 0 0);               /* white left nav */
+  --sidebar-foreground: oklch(0.28 0.02 254);
+  --sidebar-primary: oklch(0.55 0.19 254);
+  --sidebar-primary-foreground: oklch(1 0 0);
+  --sidebar-accent: oklch(0.96 0.003 240);
+  --sidebar-accent-foreground: oklch(0.14 0.02 258);
+  --sidebar-border: oklch(0.92 0.004 240);
+  --sidebar-ring: oklch(0.55 0.19 254 / 45%);
 }
 
 .dark {
-  --background: oklch(0.155 0.006 240);
-  --foreground: oklch(0.97 0.004 240);
-  --card: oklch(0.195 0.006 240);
-  --card-foreground: oklch(0.97 0.004 240);
-  --popover: oklch(0.21 0.007 240);
-  --popover-foreground: oklch(0.97 0.004 240);
-  --primary: oklch(0.78 0.13 200);
-  --primary-foreground: oklch(0.14 0.01 240);
-  --secondary: oklch(0.245 0.008 240);
-  --secondary-foreground: oklch(0.94 0.005 240);
-  --muted: oklch(0.225 0.007 240);
-  --muted-foreground: oklch(0.66 0.012 240);
-  --accent: oklch(0.78 0.13 200);
-  --accent-foreground: oklch(0.14 0.01 240);
-  --success: oklch(0.74 0.16 152);
-  --warning: oklch(0.82 0.15 80);
-  --info: oklch(0.78 0.13 230);
-  --destructive: oklch(0.7 0.21 22);
-  --border: oklch(1 0 0 / 8%);
-  --input: oklch(1 0 0 / 10%);
-  --ring: oklch(0.78 0.13 200 / 60%);
-  --chart-1: oklch(0.78 0.13 200);
-  --chart-2: oklch(0.74 0.16 152);
-  --chart-3: oklch(0.82 0.15 80);
-  --chart-4: oklch(0.7 0.21 22);
-  --chart-5: oklch(0.68 0.14 285);
-  --chart-cyan: oklch(0.78 0.13 200);
-  --chart-lime: oklch(0.74 0.16 152);
-  --chart-amber: oklch(0.82 0.15 80);
-  --chart-rose: oklch(0.7 0.21 22);
-  --sidebar: oklch(0.13 0.006 240);
-  --sidebar-foreground: oklch(0.88 0.005 240);
-  --sidebar-primary: oklch(0.78 0.13 200);
-  --sidebar-primary-foreground: oklch(0.13 0.006 240);
-  --sidebar-accent: oklch(0.225 0.008 240);
-  --sidebar-accent-foreground: oklch(0.97 0.004 240);
-  --sidebar-border: oklch(1 0 0 / 6%);
-  --sidebar-ring: oklch(0.78 0.13 200 / 60%);
+  --background: oklch(0.19 0.025 254);   /* #0f1b2a deep navy page */
+  --foreground: oklch(0.96 0.003 240);   /* #f2f3f3 */
+  --card: oklch(0.24 0.025 254);         /* #1b2532 container */
+  --card-foreground: oklch(0.96 0.003 240);
+  --popover: oklch(0.24 0.025 254);
+  --popover-foreground: oklch(0.96 0.003 240);
+  --primary: oklch(0.7 0.13 254);        /* #539fe5 lighter action blue */
+  --primary-foreground: oklch(0.14 0.02 258);
+  --secondary: oklch(0.3 0.02 254);      /* #232f3e */
+  --secondary-foreground: oklch(0.96 0.003 240);
+  --muted: oklch(0.3 0.02 254);
+  --muted-foreground: oklch(0.66 0.02 254); /* #8b98a7 */
+  --accent: oklch(0.7 0.13 254);
+  --accent-foreground: oklch(0.14 0.02 258);
+  --success: oklch(0.72 0.16 145);
+  --warning: oklch(0.75 0.14 75);
+  --info: oklch(0.7 0.13 254);
+  --destructive: oklch(0.69 0.2 20);
+  --border: oklch(0.42 0.02 254);        /* #414d5c stronger for dark mode legibility */
+  --input: oklch(0.55 0.02 254);
+  --ring: oklch(0.7 0.13 254 / 55%);
+  --chart-1: oklch(0.7 0.13 254);
+  --chart-2: oklch(0.72 0.16 145);
+  --chart-3: oklch(0.75 0.14 75);
+  --chart-4: oklch(0.69 0.2 20);
+  --chart-5: oklch(0.68 0.14 300);
+  --chart-cyan: oklch(0.7 0.14 220);
+  --chart-lime: oklch(0.72 0.16 145);
+  --chart-amber: oklch(0.75 0.14 75);
+  --chart-rose: oklch(0.69 0.2 20);
+  --sidebar: oklch(0.24 0.025 254);
+  --sidebar-foreground: oklch(0.85 0.008 240);
+  --sidebar-primary: oklch(0.7 0.13 254);
+  --sidebar-primary-foreground: oklch(0.14 0.02 258);
+  --sidebar-accent: oklch(0.3 0.02 254);
+  --sidebar-accent-foreground: oklch(0.96 0.003 240);
+  --sidebar-border: oklch(0.42 0.02 254);
+  --sidebar-ring: oklch(0.7 0.13 254 / 55%);
 }
 
 @layer base {
@@ -208,7 +215,7 @@
     margin: 0;
   }
   ::selection {
-    background: oklch(0.78 0.13 200 / 30%);
+    background: oklch(0.55 0.19 254 / 25%);
   }
   /* Tabular numerics for data tables and metrics. */
   .tabular-nums {
@@ -220,13 +227,23 @@
     height: 10px;
   }
   ::-webkit-scrollbar-thumb {
-    background: oklch(1 0 0 / 8%);
-    border-radius: 6px;
+    background: oklch(0.72 0.02 254 / 40%);
+    border-radius: 4px;
     border: 2px solid transparent;
     background-clip: padding-box;
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: oklch(1 0 0 / 14%);
+    background: oklch(0.72 0.02 254 / 70%);
+    background-clip: padding-box;
+    border: 2px solid transparent;
+  }
+  html.dark ::-webkit-scrollbar-thumb {
+    background: oklch(1 0 0 / 12%);
+    background-clip: padding-box;
+    border: 2px solid transparent;
+  }
+  html.dark ::-webkit-scrollbar-thumb:hover {
+    background: oklch(1 0 0 / 22%);
     background-clip: padding-box;
     border: 2px solid transparent;
   }

@@ -1,7 +1,12 @@
 import {
   BarChart3Icon,
   CalendarClockIcon,
+  CreditCardIcon,
+  FileArchiveIcon,
+  FlagIcon,
+  KeyIcon,
   LayoutDashboardIcon,
+  RadioIcon,
   MailIcon,
   MessageSquareIcon,
   PackageIcon,
@@ -61,6 +66,11 @@ export const navItems: Array<{
   { id: "audit", label: "Audit log", icon: ScrollTextIcon },
   { id: "emails", label: "Email templates", icon: MailIcon },
   { id: "reports", label: "Reports", icon: CalendarClockIcon },
+  { id: "flags", label: "Feature flags", icon: FlagIcon },
+  { id: "apikeys", label: "API keys", icon: KeyIcon },
+  { id: "webhooks", label: "Webhooks", icon: RadioIcon },
+  { id: "billing", label: "Billing", icon: CreditCardIcon },
+  { id: "compliance", label: "Compliance", icon: FileArchiveIcon },
   { id: "settings", label: "Settings", icon: SettingsIcon },
 ];
 

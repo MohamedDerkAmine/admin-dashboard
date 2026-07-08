@@ -28,8 +28,14 @@ import { ProductsSection } from "@/components/admin/sections/products-section";
 import { ReportsSection } from "@/components/admin/sections/reports-section";
 import { ReturnsSection } from "@/components/admin/sections/returns-section";
 import { ReviewsSection } from "@/components/admin/sections/reviews-section";
+import { ApiKeysSection } from "@/components/admin/sections/api-keys-section";
+import { BillingSection } from "@/components/admin/sections/billing-section";
+import { ComplianceSection } from "@/components/admin/sections/compliance-section";
+import { FeatureFlagsSection } from "@/components/admin/sections/feature-flags-section";
 import { SettingsSection } from "@/components/admin/sections/settings-section";
+import { WebhooksSection } from "@/components/admin/sections/webhooks-section";
 import { UsersSection } from "@/components/admin/sections/users-section";
+import type { InviteResult } from "@/components/admin/dashboard/use-admin-users";
 import type { InvitationForm, Section } from "@/components/admin/shared/types";
 
 type PaginatedView<T> = {
@@ -143,7 +149,7 @@ type ReportActions = {
 type UserControls = {
   canManage: boolean;
   invitationForm: InvitationForm;
-  invite: () => void;
+  invite: () => Promise<InviteResult>;
   removeInvitation: (id: string) => void;
   setInvitationForm: (form: InvitationForm) => void;
   updateRole: (userId: string, role: AdminRole) => void;
@@ -318,6 +324,11 @@ export function DashboardSectionRouter({
           storeName="StoreOps"
         />
       ) : null}
+      {section === "flags" ? <FeatureFlagsSection /> : null}
+      {section === "apikeys" ? <ApiKeysSection /> : null}
+      {section === "webhooks" ? <WebhooksSection /> : null}
+      {section === "billing" ? <BillingSection /> : null}
+      {section === "compliance" ? <ComplianceSection /> : null}
       {section === "settings" ? <SettingsSection /> : null}
       {section === "users" ? (
         <UsersSection

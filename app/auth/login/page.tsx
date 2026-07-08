@@ -2,8 +2,29 @@ import { BoxesIcon, CommandIcon, KeyboardIcon, ZapIcon } from "lucide-react";
 
 import { LoginForm } from "@/components/auth/login-form";
 import { Kbd } from "@/components/admin/shared/kbd";
+import { getOptionalTenantSession } from "@/lib/auth/session";
+import { isBootstrapped } from "@/lib/auth/service";
+import { redirect } from "next/navigation";
 
-export default function LoginPage() {
+export default async function LoginPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ next?: string; email?: string }>;
+}) {
+  if (!isBootstrapped()) {
+    redirect("/onboarding");
+  }
+
+  const params = await searchParams;
+  const rawNext = typeof params.next === "string" ? params.next : "";
+  const nextPath = rawNext.startsWith("/") ? rawNext : "/";
+  const initialEmail = typeof params.email === "string" ? params.email : "";
+
+  const session = await getOptionalTenantSession();
+  if (session) {
+    redirect(nextPath);
+  }
+
   return (
     <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-background px-4 py-10">
       <div
@@ -11,7 +32,7 @@ export default function LoginPage() {
         className="pointer-events-none absolute inset-0 opacity-60"
         style={{
           backgroundImage:
-            "radial-gradient(600px circle at 18% 22%, oklch(0.78 0.13 200 / 12%), transparent 50%), radial-gradient(700px circle at 82% 78%, oklch(0.74 0.16 152 / 8%), transparent 55%)",
+            "radial-gradient(600px circle at 18% 22%, color-mix(in oklch, var(--primary), transparent 88%), transparent 50%), radial-gradient(700px circle at 82% 78%, color-mix(in oklch, var(--info), transparent 92%), transparent 55%)",
         }}
       />
       <div
@@ -35,7 +56,7 @@ export default function LoginPage() {
           </h1>
           <p className="mt-4 max-w-lg text-sm text-muted-foreground">
             Manage products, orders, customers, and team access from a single
-            keyboard-first surface. Sign in with your Supabase credentials.
+            keyboard-first surface. Sign in with your local workspace account.
           </p>
           <ul className="mt-8 grid gap-3 text-sm">
             <Feature icon={CommandIcon} label="Command palette navigation">
@@ -50,7 +71,7 @@ export default function LoginPage() {
             <Feature icon={ZapIcon} label="Inline edits across every table" />
           </ul>
         </section>
-        <LoginForm />
+        <LoginForm initialEmail={initialEmail} nextPath={nextPath} />
       </div>
     </main>
   );

@@ -15,14 +15,16 @@ import type { useRecents } from "@/components/admin/shared/recents";
 import type { LogAuditFn } from "./use-audit-log";
 
 export function useOrders({
+  initialOrders: initialList = initialOrders,
   recents,
   logAudit,
 }: {
+  initialOrders?: Order[];
   recents: ReturnType<typeof useRecents>;
   logAudit: LogAuditFn;
 }) {
   const { toast } = useToast();
-  const [list, setList] = useState<Order[]>(initialOrders);
+  const [list, setList] = useState<Order[]>(initialList);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [form, setForm] = useState<OrderForm>(emptyOrderForm);
   const [refundOrderId, setRefundOrderId] = useState<string | null>(null);
