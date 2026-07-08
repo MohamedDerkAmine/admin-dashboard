@@ -5,10 +5,10 @@ import type { StatusLike } from "@/components/admin/shared/types";
 type Tone = "success" | "warning" | "danger" | "info" | "neutral";
 
 const toneStyles: Record<Tone, { dot: string; text: string }> = {
-  success: { dot: "bg-[var(--success)] shadow-[0_0_0_3px_oklch(0.74_0.16_152/15%)]", text: "text-foreground" },
-  warning: { dot: "bg-[var(--warning)] shadow-[0_0_0_3px_oklch(0.82_0.15_80/15%)]", text: "text-foreground" },
-  danger: { dot: "bg-destructive shadow-[0_0_0_3px_oklch(0.7_0.21_22/15%)]", text: "text-foreground" },
-  info: { dot: "bg-[var(--info)] shadow-[0_0_0_3px_oklch(0.78_0.13_230/15%)]", text: "text-foreground" },
+  success: { dot: "bg-[var(--success)] shadow-[0_0_0_3px_color-mix(in_oklch,var(--success),transparent_85%)]", text: "text-foreground" },
+  warning: { dot: "bg-[var(--warning)] shadow-[0_0_0_3px_color-mix(in_oklch,var(--warning),transparent_85%)]", text: "text-foreground" },
+  danger: { dot: "bg-destructive shadow-[0_0_0_3px_color-mix(in_oklch,var(--destructive),transparent_85%)]", text: "text-foreground" },
+  info: { dot: "bg-[var(--info)] shadow-[0_0_0_3px_color-mix(in_oklch,var(--info),transparent_85%)]", text: "text-foreground" },
   neutral: { dot: "bg-muted-foreground/70", text: "text-muted-foreground" },
 };
 

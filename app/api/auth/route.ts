@@ -1,12 +1,10 @@
-import { createClient } from "@/lib/server";
-
-type AuthMode = "signin" | "signup";
+import { authenticateUser } from "@/lib/auth/service";
+import { clearSession, createSession } from "@/lib/auth/session";
 
 export async function POST(request: Request) {
   const body = await request.json().catch(() => null);
   const email = typeof body?.email === "string" ? body.email.trim() : "";
   const password = typeof body?.password === "string" ? body.password : "";
-  const mode: AuthMode = body?.mode === "signup" ? "signup" : "signin";
 
   if (!email || !password) {
     return Response.json(
@@ -15,35 +13,21 @@ export async function POST(request: Request) {
     );
   }
 
-  const supabase = await createClient();
-  const { error } = await (mode === "signin"
-    ? supabase.auth.signInWithPassword({ email, password })
-    : supabase.auth.signUp({ email, password })
-  ).catch((error: unknown) => ({
-    error:
-      error instanceof Error
-        ? error
-        : new Error("Unable to reach Supabase. Please try again."),
-  }));
+  const authResult = await authenticateUser(email, password);
 
-  if (error) {
+  if (!authResult) {
     return Response.json(
-      { message: getAuthErrorMessage(error) },
+      { message: "Invalid email or password." },
       { status: 400 },
     );
   }
 
+  await createSession(authResult.userId, authResult.activeTenantId);
+
   return Response.json({ ok: true });
 }
 
-function getAuthErrorMessage(error: Error) {
-  if (
-    error.message === "fetch failed" ||
-    error.message.includes("ENOTFOUND") ||
-    error.message.includes("getaddrinfo")
-  ) {
-    return "Unable to reach Supabase. Check NEXT_PUBLIC_SUPABASE_URL in .env.local or try again when the project is reachable.";
-  }
-
-  return error.message;
+export async function DELETE() {
+  await clearSession();
+  return Response.json({ ok: true });
 }

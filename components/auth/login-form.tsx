@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Loader2Icon, TriangleAlertIcon } from "lucide-react";
 
@@ -9,11 +10,16 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
-export function LoginForm() {
+export function LoginForm({
+  initialEmail = "",
+  nextPath = "/",
+}: {
+  initialEmail?: string;
+  nextPath?: string;
+} = {}) {
   const router = useRouter();
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(initialEmail);
   const [password, setPassword] = useState("");
-  const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [message, setMessage] = useState("");
   const [isPending, setIsPending] = useState(false);
 
@@ -23,7 +29,7 @@ export function LoginForm() {
     setMessage("");
 
     const response = await fetch("/api/auth", {
-      body: JSON.stringify({ email, mode, password }),
+      body: JSON.stringify({ email, password }),
       headers: { "Content-Type": "application/json" },
       method: "POST",
     }).catch(() => null);
@@ -47,19 +53,15 @@ export function LoginForm() {
     }
 
     router.refresh();
-    router.push("/");
+    router.push(nextPath);
   }
 
   return (
     <Card className="w-full gap-0 py-0">
       <div className="border-b border-border/50 px-5 py-4">
-        <h2 className="text-base font-semibold">
-          {mode === "signin" ? "Sign in to StoreOps" : "Create your account"}
-        </h2>
+        <h2 className="text-base font-semibold">Sign in to StoreOps</h2>
         <p className="text-xs text-muted-foreground">
-          {mode === "signin"
-            ? "Use your Supabase email and password."
-            : "We'll create a Supabase account and sign you in."}
+          Use the local owner or workspace member account.
         </p>
       </div>
       <form className="grid gap-3 p-5" onSubmit={handleSubmit}>
@@ -86,22 +88,18 @@ export function LoginForm() {
             >
               Password
             </Label>
-            {mode === "signin" ? (
-              <button
-                type="button"
-                className="text-[11px] text-muted-foreground transition-colors hover:text-foreground"
-              >
-                Forgot?
-              </button>
-            ) : null}
+            <button
+              type="button"
+              className="text-[11px] text-muted-foreground transition-colors hover:text-foreground"
+            >
+              Forgot?
+            </button>
           </div>
           <Input
             id="password"
             name="password"
-            autoComplete={
-              mode === "signin" ? "current-password" : "new-password"
-            }
-            minLength={6}
+            autoComplete="current-password"
+            minLength={8}
             onChange={(event) => setPassword(event.target.value)}
             required
             type="password"
@@ -122,18 +120,14 @@ export function LoginForm() {
           {isPending ? (
             <Loader2Icon className="size-4 animate-spin" />
           ) : null}
-          {mode === "signin" ? "Sign in" : "Create account"}
+          Sign in
         </Button>
       </form>
       <div className="border-t border-border/50 bg-muted/20 px-5 py-3 text-center text-xs text-muted-foreground">
-        {mode === "signin" ? "No account? " : "Already have an account? "}
-        <button
-          type="button"
-          className="font-medium text-primary transition-colors hover:underline"
-          onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
-        >
-          {mode === "signin" ? "Create one" : "Sign in"}
-        </button>
+        Need a new workspace?{" "}
+        <Link href="/signup" className="text-foreground hover:underline">
+          Sign up
+        </Link>
       </div>
     </Card>
   );

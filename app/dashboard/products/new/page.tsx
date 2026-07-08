@@ -1,5 +1,7 @@
 import { ProductCreateWorkspace } from "@/components/products/product-create-workspace";
+import { requireTenantSession } from "@/lib/auth/dal";
 
-export default function NewProductPage() {
+export default async function NewProductPage() {
+  await requireTenantSession();
   return <ProductCreateWorkspace />;
 }

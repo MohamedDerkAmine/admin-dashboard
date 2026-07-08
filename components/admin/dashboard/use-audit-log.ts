@@ -8,6 +8,7 @@ import {
   type AuditEvent,
   type AuditResource,
 } from "@/lib/admin-data";
+import { persistAdminSnapshot } from "./persistence";
 
 export type LogAuditFn = (
   action: AuditAction,
@@ -16,8 +17,11 @@ export type LogAuditFn = (
   detail?: string,
 ) => void;
 
-export function useAuditLog(userEmail?: string) {
-  const [events, setEvents] = useState<AuditEvent[]>(initialAuditEvents);
+export function useAuditLog(
+  userEmail?: string,
+  initialEvents: AuditEvent[] = initialAuditEvents,
+) {
+  const [events, setEvents] = useState<AuditEvent[]>(initialEvents);
 
   const log = useCallback<LogAuditFn>(
     (action, resource, target, detail) => {
@@ -30,7 +34,11 @@ export function useAuditLog(userEmail?: string) {
         target,
         detail,
       };
-      setEvents((current) => [event, ...current]);
+      setEvents((current) => {
+        const next = [event, ...current];
+        void persistAdminSnapshot("auditEvents", next).catch(() => undefined);
+        return next;
+      });
     },
     [userEmail],
   );

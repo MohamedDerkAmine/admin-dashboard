@@ -8,8 +8,10 @@ import type {
   ReturnRequest,
 } from "@/lib/admin-data";
 import { DensityToggle } from "@/components/admin/navigation/density-toggle";
+import { EnvPill } from "@/components/admin/navigation/env-pill";
 import { Kbd } from "@/components/admin/shared/kbd";
 import { MobileNav } from "@/components/admin/navigation/mobile-nav";
+import { PresenceStack } from "@/components/admin/navigation/presence-stack";
 import {
   NotificationsButton,
   buildNotifications,
@@ -67,6 +69,11 @@ export function DashboardHeader({
         <SearchIcon className="size-4" />
         <span className="sr-only">Open search</span>
       </Button>
+
+      <div className="h-5 w-px bg-border" aria-hidden />
+
+      <EnvPill />
+      <PresenceStack />
 
       <div className="h-5 w-px bg-border" aria-hidden />
 

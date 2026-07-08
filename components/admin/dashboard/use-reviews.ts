@@ -6,6 +6,7 @@ import { initialReviews, type Review } from "@/lib/admin-data";
 import { useToast } from "@/components/admin/shared/toast";
 
 export function useReviews({
+  initialReviews: initialList = initialReviews,
   initialQuery = "",
   initialStatusFilter = "All",
   initialRatingFilter = "All",
@@ -13,6 +14,7 @@ export function useReviews({
   setUrlStatusFilter,
   setUrlRatingFilter,
 }: {
+  initialReviews?: Review[];
   initialQuery?: string;
   initialStatusFilter?: string;
   initialRatingFilter?: string;
@@ -21,7 +23,7 @@ export function useReviews({
   setUrlRatingFilter?: (rating: string) => void;
 } = {}) {
   const { toast } = useToast();
-  const [list, setList] = useState<Review[]>(initialReviews);
+  const [list, setList] = useState<Review[]>(initialList);
   const [query, setQueryState] = useState(initialQuery);
   const [statusFilter, setStatusFilterState] = useState(initialStatusFilter);
   const [ratingFilter, setRatingFilterState] = useState(initialRatingFilter);

@@ -1,8 +1,12 @@
-import { BoxesIcon, PanelLeftCloseIcon, PanelLeftOpenIcon } from "lucide-react";
+import { PanelLeftCloseIcon, PanelLeftOpenIcon } from "lucide-react";
 
 import { navItems } from "@/components/admin/shared/constants";
 import { sectionPaths } from "@/components/admin/dashboard/routing";
 import { NavButton } from "@/components/admin/navigation/nav-button";
+import {
+  TenantSwitcher,
+  type SwitcherMembership,
+} from "@/components/admin/navigation/tenant-switcher";
 import type { Section } from "@/components/admin/shared/types";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -33,15 +37,21 @@ const sections: { label: string; items: typeof navItems }[] = [
 ];
 
 export function Sidebar({
+  activeTenantId,
   collapsed,
+  memberships,
   section,
   setCollapsed,
   userEmail,
+  userRole,
 }: {
+  activeTenantId: string;
   collapsed: boolean;
+  memberships: SwitcherMembership[];
   section: Section;
   setCollapsed: (collapsed: boolean) => void;
   userEmail?: string;
+  userRole?: string;
 }) {
   return (
     <aside
@@ -56,15 +66,11 @@ export function Sidebar({
           collapsed && "justify-center px-2",
         )}
       >
-        <div className="flex size-7 items-center justify-center rounded-md bg-sidebar-primary text-sidebar-primary-foreground">
-          <BoxesIcon className="size-4" />
-        </div>
-        <div className={cn("min-w-0 flex-1", collapsed && "sr-only")}>
-          <p className="truncate text-sm font-semibold leading-tight">StoreOps</p>
-          <p className="truncate text-[10px] text-sidebar-foreground/50">
-            Commerce admin
-          </p>
-        </div>
+        <TenantSwitcher
+          activeTenantId={activeTenantId}
+          memberships={memberships}
+          collapsed={collapsed}
+        />
       </div>
 
       <nav
@@ -114,7 +120,9 @@ export function Sidebar({
             </div>
             <div className="min-w-0 flex-1">
               <p className="truncate text-xs font-medium">{userEmail}</p>
-              <p className="text-[10px] text-sidebar-foreground/50">Owner</p>
+              <p className="text-[10px] text-sidebar-foreground/50">
+                {userRole ?? "Member"}
+              </p>
             </div>
           </div>
         ) : null}

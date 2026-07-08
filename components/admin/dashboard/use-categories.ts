@@ -9,16 +9,19 @@ import type { CategoryForm } from "@/components/admin/shared/types";
 import type { useRecents } from "@/components/admin/shared/recents";
 
 import type { LogAuditFn } from "./use-audit-log";
+import { persistAdminSnapshot } from "./persistence";
 
 export function useCategories({
+  initialCategories: initialList = initialCategories,
   recents,
   logAudit,
 }: {
+  initialCategories?: typeof initialCategories;
   recents: ReturnType<typeof useRecents>;
   logAudit: LogAuditFn;
 }) {
   const { toast } = useToast();
-  const [list, setList] = useState(initialCategories);
+  const [list, setList] = useState(initialList);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [form, setForm] = useState<CategoryForm>(emptyCategoryForm);
 
@@ -35,7 +38,9 @@ export function useCategories({
     }
 
     const newCategory = { id: `cat-${Date.now()}`, name, productCount: 0 };
-    setList((current) => [...current, newCategory]);
+    const next = [...list, newCategory];
+    setList(next);
+    void persistAdminSnapshot("categories", next).catch(() => undefined);
     setForm(emptyCategoryForm);
     setDialogOpen(false);
     logAudit("created", "category", name);
@@ -49,9 +54,9 @@ export function useCategories({
   function remove(categoryId: string) {
     const removed = list.find((category) => category.id === categoryId);
     const index = list.findIndex((category) => category.id === categoryId);
-    setList((current) =>
-      current.filter((category) => category.id !== categoryId),
-    );
+    const next = list.filter((category) => category.id !== categoryId);
+    setList(next);
+    void persistAdminSnapshot("categories", next).catch(() => undefined);
     if (removed) {
       logAudit("deleted", "category", removed.name);
       toast({
@@ -60,11 +65,12 @@ export function useCategories({
         action: {
           label: "Undo",
           onClick: () => {
-            setList((current) => {
-              const next = [...current];
-              next.splice(Math.min(index, next.length), 0, removed);
-              return next;
-            });
+            const restored = [...next];
+            restored.splice(Math.min(index, restored.length), 0, removed);
+            setList(restored);
+            void persistAdminSnapshot("categories", restored).catch(
+              () => undefined,
+            );
           },
         },
       });

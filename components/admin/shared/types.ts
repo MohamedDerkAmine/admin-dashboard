@@ -20,6 +20,11 @@ export type Section =
   | "audit"
   | "emails"
   | "reports"
+  | "flags"
+  | "apikeys"
+  | "webhooks"
+  | "billing"
+  | "compliance"
   | "settings";
 
 export type ProductForm = Omit<Product, "id">;

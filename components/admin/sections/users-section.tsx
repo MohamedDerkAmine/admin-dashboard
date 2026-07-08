@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { MailPlusIcon } from "lucide-react";
+import { CheckIcon, ClipboardIcon, MailPlusIcon, TriangleAlertIcon } from "lucide-react";
 
 import {
   type AdminRole,
@@ -9,6 +9,7 @@ import {
   type AdminUserStatus,
   type Invitation,
 } from "@/lib/admin-data";
+import type { InviteResult } from "@/components/admin/dashboard/use-admin-users";
 import { adminRoles } from "@/components/admin/shared/constants";
 import { DataTable } from "@/components/admin/shared/data-table";
 import { RolesPanel } from "@/components/admin/shared/roles-panel";
@@ -51,7 +52,7 @@ export function UsersSection({
   currentRole: AdminRole;
   invitationForm: InvitationForm;
   invitations: Invitation[];
-  inviteUser: () => void;
+  inviteUser: () => Promise<InviteResult>;
   removeInvitation: (invitationId: string) => void;
   setInvitationForm: (form: InvitationForm) => void;
   updateUserRole: (userId: string, role: AdminRole) => void;
@@ -59,10 +60,34 @@ export function UsersSection({
   users: AdminUser[];
 }) {
   const [inviteOpen, setInviteOpen] = useState(false);
+  const [inviteResult, setInviteResult] = useState<InviteResult | null>(null);
+  const [pending, setPending] = useState(false);
+  const [copied, setCopied] = useState(false);
 
-  function handleInvite() {
-    inviteUser();
+  async function handleInvite() {
+    setPending(true);
+    setInviteResult(null);
+    const result = await inviteUser();
+    setPending(false);
+    setInviteResult(result);
+  }
+
+  function closeInvite() {
     setInviteOpen(false);
+    setInviteResult(null);
+    setCopied(false);
+  }
+
+  async function copyLink() {
+    if (inviteResult?.ok) {
+      try {
+        await navigator.clipboard.writeText(inviteResult.acceptUrl);
+        setCopied(true);
+        window.setTimeout(() => setCopied(false), 1500);
+      } catch {
+        // ignore clipboard failures
+      }
+    }
   }
 
   return (
@@ -205,67 +230,128 @@ export function UsersSection({
 
       <RolesPanel canManage={canManageUsers} />
 
-      <Dialog open={inviteOpen} onOpenChange={setInviteOpen}>
+      <Dialog
+        open={inviteOpen}
+        onOpenChange={(open) => (open ? setInviteOpen(true) : closeInvite())}
+      >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Invite user</DialogTitle>
+            <DialogTitle>
+              {inviteResult?.ok ? "Invitation sent" : "Invite user"}
+            </DialogTitle>
             <DialogDescription>
-              Invitations are local mock records until Supabase tables are
-              added.
+              {inviteResult?.ok
+                ? "Share the link below — the invitation expires with the token."
+                : "Sends an invitation link. Email delivery is stubbed — share the link that appears after sending."}
             </DialogDescription>
           </DialogHeader>
-          <div className="grid gap-3">
-            <div className="grid gap-1.5">
-              <Label htmlFor="invite-email">Email</Label>
-              <Input
-                id="invite-email"
-                disabled={!canManageUsers}
-                placeholder="teammate@example.com"
-                type="email"
-                value={invitationForm.email}
-                onChange={(event) =>
-                  setInvitationForm({
-                    ...invitationForm,
-                    email: event.target.value,
-                  })
-                }
-              />
+          {inviteResult?.ok ? (
+            <div className="grid gap-3">
+              <div className="flex items-start gap-2 rounded-md border border-[var(--success)]/30 bg-[color-mix(in_oklch,var(--success),transparent_90%)] px-3 py-2 text-xs">
+                <CheckIcon className="mt-0.5 size-3.5 shrink-0 text-[var(--success)]" />
+                <div className="min-w-0">
+                  <p className="font-medium text-foreground">
+                    Invitation sent to {inviteResult.invitation.email}
+                  </p>
+                  <p className="text-muted-foreground">
+                    Role: {inviteResult.invitation.role} · Expires in{" "}
+                    {inviteResult.invitation.expires}
+                  </p>
+                </div>
+              </div>
+              <div className="grid gap-1.5">
+                <Label>Accept link</Label>
+                <div className="flex items-center gap-1.5">
+                  <Input
+                    readOnly
+                    value={inviteResult.acceptUrl}
+                    className="font-mono text-xs"
+                    onFocus={(event) => event.currentTarget.select()}
+                  />
+                  <Button size="icon-sm" variant="outline" onClick={copyLink}>
+                    {copied ? (
+                      <CheckIcon className="size-3.5" />
+                    ) : (
+                      <ClipboardIcon className="size-3.5" />
+                    )}
+                    <span className="sr-only">Copy link</span>
+                  </Button>
+                </div>
+                <p className="text-[11px] text-muted-foreground">
+                  Share this link with the recipient. It expires with the
+                  invitation.
+                </p>
+              </div>
             </div>
-            <div className="grid gap-1.5">
-              <Label htmlFor="invite-role">Role</Label>
-              <select
-                id="invite-role"
-                className="h-8 rounded-md border border-input bg-transparent px-2 text-sm disabled:opacity-50"
-                disabled={!canManageUsers}
-                value={invitationForm.role}
-                onChange={(event) =>
-                  setInvitationForm({
-                    ...invitationForm,
-                    role: event.target.value as AdminRole,
-                  })
-                }
-              >
-                {adminRoles
-                  .filter((role) => role !== "Owner")
-                  .map((role) => (
-                    <option key={role}>{role}</option>
-                  ))}
-              </select>
+          ) : (
+            <div className="grid gap-3">
+              <div className="grid gap-1.5">
+                <Label htmlFor="invite-email">Email</Label>
+                <Input
+                  id="invite-email"
+                  disabled={!canManageUsers || pending}
+                  placeholder="teammate@example.com"
+                  type="email"
+                  value={invitationForm.email}
+                  onChange={(event) =>
+                    setInvitationForm({
+                      ...invitationForm,
+                      email: event.target.value,
+                    })
+                  }
+                />
+              </div>
+              <div className="grid gap-1.5">
+                <Label htmlFor="invite-role">Role</Label>
+                <select
+                  id="invite-role"
+                  className="h-8 rounded-md border border-input bg-transparent px-2 text-sm disabled:opacity-50"
+                  disabled={!canManageUsers || pending}
+                  value={invitationForm.role}
+                  onChange={(event) =>
+                    setInvitationForm({
+                      ...invitationForm,
+                      role: event.target.value as AdminRole,
+                    })
+                  }
+                >
+                  {adminRoles
+                    .filter((role) => role !== "Owner")
+                    .map((role) => (
+                      <option key={role}>{role}</option>
+                    ))}
+                </select>
+              </div>
+              {inviteResult && !inviteResult.ok ? (
+                <div className="flex items-start gap-2 rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-xs text-destructive">
+                  <TriangleAlertIcon className="mt-0.5 size-3.5 shrink-0" />
+                  <span>{inviteResult.message}</span>
+                </div>
+              ) : null}
+              {!canManageUsers ? (
+                <p className="text-xs text-muted-foreground">
+                  Only Owner and Admin roles can invite or change users.
+                </p>
+              ) : null}
             </div>
-            {!canManageUsers ? (
-              <p className="text-xs text-muted-foreground">
-                Only Owner and Admin roles can invite or change users.
-              </p>
-            ) : null}
-          </div>
+          )}
           <DialogFooter>
-            <Button variant="outline" onClick={() => setInviteOpen(false)}>
-              Cancel
-            </Button>
-            <Button disabled={!canManageUsers} onClick={handleInvite}>
-              <MailPlusIcon className="size-4" />
-              Send invite
-            </Button>
+            {inviteResult?.ok ? (
+              <Button onClick={closeInvite}>Done</Button>
+            ) : (
+              <>
+                <Button variant="outline" onClick={closeInvite}>
+                  Cancel
+                </Button>
+                <Button
+                  disabled={!canManageUsers || pending}
+                  onClick={handleInvite}
+                >
+                  <MailPlusIcon className="size-4" />
+                  {pending ? "Sending..." : "Send invite"}
+                </Button>
+              </>
+            )}
           </DialogFooter>
         </DialogContent>
       </Dialog>

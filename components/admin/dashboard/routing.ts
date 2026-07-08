@@ -15,6 +15,11 @@ export const sectionPaths: Record<Section, string> = {
   audit: "/audit",
   emails: "/emails",
   reports: "/reports",
+  flags: "/flags",
+  apikeys: "/apikeys",
+  webhooks: "/webhooks",
+  billing: "/billing",
+  compliance: "/compliance",
   settings: "/settings",
 };
 

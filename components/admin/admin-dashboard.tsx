@@ -3,8 +3,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
-import { initialCustomers } from "@/lib/admin-data";
-import { createClient } from "@/lib/client";
+import type { AdminRole } from "@/lib/admin-data";
+import type { TenantAdminData } from "@/lib/db/admin-store";
 import {
   sectionPaths,
   type AdminSearchState,
@@ -18,6 +18,7 @@ import { useAuditLog } from "@/components/admin/dashboard/use-audit-log";
 import { useCategories } from "@/components/admin/dashboard/use-categories";
 import { useDashboardDerived } from "@/components/admin/dashboard/use-dashboard-derived";
 import { useDiscounts } from "@/components/admin/dashboard/use-discounts";
+import { useAmbientActivity } from "@/components/admin/dashboard/use-ambient-activity";
 import { useGlobalHotkeys } from "@/components/admin/dashboard/use-global-hotkeys";
 import { useOrders } from "@/components/admin/dashboard/use-orders";
 import { useProducts } from "@/components/admin/dashboard/use-products";
@@ -27,54 +28,92 @@ import { useScheduledReports } from "@/components/admin/dashboard/use-scheduled-
 import { useSectionState } from "@/components/admin/dashboard/use-section-state";
 import { useRecents, type RecentItem } from "@/components/admin/shared/recents";
 import { Sidebar } from "@/components/admin/navigation/sidebar";
+import type { SwitcherMembership } from "@/components/admin/navigation/tenant-switcher";
 import { ToastProvider } from "@/components/admin/shared/toast";
 import type { Section } from "@/components/admin/shared/types";
 
 export function AdminDashboard({
+  activeTenantId,
+  memberships,
   section,
   searchState,
+  tenantName,
   userEmail,
+  userRole,
+  initialData,
 }: {
+  activeTenantId: string;
+  initialData: TenantAdminData;
+  memberships: SwitcherMembership[];
   section: Section;
   searchState: AdminSearchState;
+  tenantName: string;
   userEmail?: string;
+  userRole: string;
 }) {
   return (
     <ToastProvider>
       <AdminDashboardInner
+        activeTenantId={activeTenantId}
+        initialData={initialData}
+        memberships={memberships}
         section={section}
         searchState={searchState}
+        tenantName={tenantName}
         userEmail={userEmail}
+        userRole={userRole}
       />
     </ToastProvider>
   );
 }
 
 function AdminDashboardInner({
+  activeTenantId,
+  initialData,
+  memberships,
   section,
   searchState,
+  tenantName: _tenantName,
   userEmail,
+  userRole,
 }: {
+  activeTenantId: string;
+  initialData: TenantAdminData;
+  memberships: SwitcherMembership[];
   section: Section;
   searchState: AdminSearchState;
+  tenantName: string;
   userEmail?: string;
+  userRole: string;
 }) {
   const router = useRouter();
-  const supabase = createClient();
   const recents = useRecents();
-  const customers = initialCustomers;
+  const customers = initialData.customers;
 
   const sectionState = useSectionState({ section, searchState });
-  const audit = useAuditLog(userEmail);
-  const categories = useCategories({ recents, logAudit: audit.log });
-  const products = useProducts({
-    categories: categories.list,
+  const audit = useAuditLog(userEmail, initialData.auditEvents);
+  const categories = useCategories({
+    initialCategories: initialData.categories,
     recents,
     logAudit: audit.log,
   });
-  const orders = useOrders({ recents, logAudit: audit.log });
-  const discounts = useDiscounts({ logAudit: audit.log });
+  const products = useProducts({
+    categories: categories.list,
+    initialProducts: initialData.products,
+    recents,
+    logAudit: audit.log,
+  });
+  const orders = useOrders({
+    initialOrders: initialData.orders,
+    recents,
+    logAudit: audit.log,
+  });
+  const discounts = useDiscounts({
+    initialDiscountCodes: initialData.discounts,
+    logAudit: audit.log,
+  });
   const returns = useReturns({
+    initialReturnRequests: initialData.returnRequests,
     orders: orders.list,
     markOrderRefunded: orders.markRefunded,
     logAudit: audit.log,
@@ -86,6 +125,7 @@ function AdminDashboardInner({
       section === "returns" ? sectionState.setStatusFilter : undefined,
   });
   const reviews = useReviews({
+    initialReviews: initialData.reviews,
     initialQuery: section === "reviews" ? searchState.query : "",
     initialStatusFilter:
       section === "reviews" ? searchState.statusFilter : "All",
@@ -105,9 +145,15 @@ function AdminDashboardInner({
       returns: returns.list,
       reviews: reviews.list,
     },
+    initialScheduledReports: initialData.scheduledReports,
     logAudit: audit.log,
   });
-  const adminUsers = useAdminUsers({ userEmail });
+  const adminUsers = useAdminUsers({
+    currentRole: userRole as AdminRole,
+    initialInvitations: initialData.invitations,
+    initialUsers: initialData.adminUsers,
+    userEmail,
+  });
 
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
@@ -129,6 +175,8 @@ function AdminDashboardInner({
     setShortcutsOpen,
     switchSection: sectionState.switchSection,
   });
+
+  useAmbientActivity();
 
   function handleRecentSelect(item: RecentItem) {
     setPaletteOpen(false);
@@ -154,7 +202,7 @@ function AdminDashboardInner({
   }
 
   async function signOut() {
-    await supabase.auth.signOut();
+    await fetch("/api/auth", { method: "DELETE" });
     router.refresh();
     router.push("/auth/login");
   }
@@ -172,10 +220,13 @@ function AdminDashboardInner({
   return (
     <div className="flex min-h-screen bg-background">
       <Sidebar
+        activeTenantId={activeTenantId}
         collapsed={sidebarCollapsed}
+        memberships={memberships}
         section={sectionState.section}
         setCollapsed={setSidebarCollapsed}
         userEmail={userEmail}
+        userRole={userRole}
       />
       <div className="flex min-w-0 flex-1 flex-col">
         <DashboardHeader

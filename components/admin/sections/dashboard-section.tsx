@@ -14,6 +14,10 @@ import {
   type Product,
 } from "@/lib/admin-data";
 import { AreaChart } from "@/components/admin/shared/area-chart";
+import {
+  AnomalyBanner,
+  GettingStartedCard,
+} from "@/components/admin/sections/dashboard-extras";
 import { Sparkline } from "@/components/admin/shared/sparkline";
 import { StatusDot } from "@/components/admin/shared/status-dot";
 import type { Section } from "@/components/admin/shared/types";
@@ -108,8 +112,39 @@ export function DashboardSection({
     },
   ];
 
+  const checklistSteps = [
+    {
+      id: "product",
+      label: "Add your first product",
+      hint: "Populate the catalog before opening the storefront",
+      done: products.length > 0,
+    },
+    {
+      id: "team",
+      label: "Invite a teammate",
+      hint: "Share the workspace with Admin, Manager, or Support",
+      done: usersCount > 1 || invitationsCount > 0,
+    },
+    {
+      id: "order",
+      label: "Record a test order",
+      hint: "Verify the fulfillment flow end to end",
+      done: orders.length > 0,
+    },
+    {
+      id: "stock",
+      label: "Confirm inventory levels",
+      hint: "Adjust stock so low-stock alerts stay meaningful",
+      done: activeProducts > 0 && lowStock < products.length,
+    },
+  ];
+
   return (
     <>
+      <AnomalyBanner orders={orders} />
+
+      <GettingStartedCard steps={checklistSteps} />
+
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         {stats.map((stat) => (
           <KpiCard key={stat.label} {...stat} />
@@ -277,7 +312,7 @@ export function DashboardSection({
                       "rounded-md px-1.5 py-0.5 font-mono text-xs tabular-nums",
                       product.stock === 0
                         ? "bg-destructive/15 text-destructive"
-                        : "bg-[oklch(0.82_0.15_80/15%)] text-[var(--warning)]",
+                        : "bg-[color-mix(in_oklch,var(--warning),transparent_85%)] text-[var(--warning)]",
                     )}
                   >
                     {product.stock} left
@@ -428,9 +463,9 @@ function ActionTile({
   onAction: () => void;
 }) {
   const toneClasses: Record<typeof tone, string> = {
-    info: "bg-[oklch(0.78_0.13_230/15%)] text-[var(--info)]",
-    warning: "bg-[oklch(0.82_0.15_80/15%)] text-[var(--warning)]",
-    success: "bg-[oklch(0.74_0.16_152/15%)] text-[var(--success)]",
+    info: "bg-[color-mix(in_oklch,var(--info),transparent_85%)] text-[var(--info)]",
+    warning: "bg-[color-mix(in_oklch,var(--warning),transparent_85%)] text-[var(--warning)]",
+    success: "bg-[color-mix(in_oklch,var(--success),transparent_85%)] text-[var(--success)]",
     danger: "bg-destructive/15 text-destructive",
   };
 

@@ -12,6 +12,7 @@ import { useToast } from "@/components/admin/shared/toast";
 import type { LogAuditFn } from "./use-audit-log";
 
 export function useReturns({
+  initialReturnRequests: initialList = initialReturnRequests,
   orders,
   markOrderRefunded,
   logAudit,
@@ -20,6 +21,7 @@ export function useReturns({
   setUrlQuery,
   setUrlStatusFilter,
 }: {
+  initialReturnRequests?: ReturnRequest[];
   orders: Order[];
   markOrderRefunded: (orderId: string) => void;
   logAudit: LogAuditFn;
@@ -29,7 +31,7 @@ export function useReturns({
   setUrlStatusFilter?: (status: string) => void;
 }) {
   const { toast } = useToast();
-  const [list, setList] = useState<ReturnRequest[]>(initialReturnRequests);
+  const [list, setList] = useState<ReturnRequest[]>(initialList);
   const [query, setQueryState] = useState(initialQuery);
   const [statusFilter, setStatusFilterState] = useState(initialStatusFilter);
 
